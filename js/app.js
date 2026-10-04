@@ -32,11 +32,16 @@
   const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   // ---------- data ----------
+  const BOOKS = window.BOOKS;
+  const YEARS = Object.keys(BOOKS).map(Number).sort((a, b) => a - b);
   const WORDS = [];
-  window.CHAPTERS.forEach((c) => c.words.forEach(([zh, py, en, pic, sent]) => {
-    WORDS.push({ id: c.n + ":" + zh, ch: c.n, zh, py, en, pic, sent });
-  }));
-  const chapterOf = (n) => window.CHAPTERS.find((c) => c.n === n);
+  YEARS.forEach((y) => BOOKS[y].chapters.forEach((c) => c.words.forEach(([zh, py, en, pic, sent]) => {
+    WORDS.push({ id: "y" + y + ":" + c.n + ":" + zh, year: y, ch: c.n, zh, py, en, pic, sent });
+  })));
+  let year = store.get("year", 1);
+  if (!BOOKS[year]) year = YEARS[0];
+  const book = () => BOOKS[year];
+  const chapterOf = (n, y) => BOOKS[y || year].chapters.find((c) => c.n === n);
 
   // ---------- speech ----------
   let zhVoice = null;
@@ -88,14 +93,14 @@
   // ---------- 田字格 rendering ----------
   function tzgRow(zh, opts) {
     const chars = Array.from(zh);
-    const row = el("div", { class: "tzg-row" + (chars.length > 3 ? " many" : "") });
+    const row = el("div", { class: "tzg-row" + (chars.length > 4 ? " most" : chars.length > 3 ? " many" : "") });
     chars.forEach((c) => row.append(el("div", { class: "tzg" + (opts && opts.small ? " small" : ""), "aria-hidden": "true" }, c)));
     return row;
   }
   function pyRow(zh, py) {
     const syl = py.split(/\s+/);
     const chars = Array.from(zh);
-    const row = el("div", { class: "py-row" + (chars.length > 3 ? " many" : "") });
+    const row = el("div", { class: "py-row" + (chars.length > 4 ? " most" : chars.length > 3 ? " many" : "") });
     if (syl.length === chars.length) syl.forEach((s) => row.append(el("span", {}, s)));
     else row.append(el("span", { style: "width:auto" }, py));
     return row;
@@ -108,36 +113,48 @@
     return n;
   }
 
-  // ---------- chapter picker (shared) ----------
-  let selected = new Set(store.get("chapters", [1, 2, 3]));
+  // ---------- year + chapter picker (shared) ----------
+  const loadSelected = () => new Set(store.get("chapters:" + year, year === 1 ? store.get("chapters", [1, 2, 3]) : [1]));
+  let selected = loadSelected();
   const chipsBox = $("#chips");
+  function renderYears() {
+    const box = $("#years");
+    box.innerHTML = "";
+    YEARS.forEach((y) => box.append(el("button", {
+      "aria-pressed": y === year ? "true" : "false",
+      onclick: () => { if (y !== year) { year = y; store.set("year", y); selected = loadSelected(); chaptersChanged(); } }
+    }, el("span", { class: "zh" }, BOOKS[y].zh), " Year " + y)));
+    $("#year-label").textContent = "Year " + year + " " + book().zh;
+  }
   function renderChips() {
+    renderYears();
     chipsBox.innerHTML = "";
-    window.CHAPTERS.forEach((c) => {
+    book().chapters.forEach((c) => {
       chipsBox.append(el("button", {
         class: "chip", "aria-pressed": selected.has(c.n) ? "true" : "false",
         title: c.zh + " · " + c.en,
         onclick: () => { selected.has(c.n) ? selected.delete(c.n) : selected.add(c.n); chaptersChanged(); }
       }, String(c.n)));
     });
-    const picked = [...selected].sort((a, b) => a - b).map(chapterOf);
+    const picked = [...selected].sort((a, b) => a - b).map((n) => chapterOf(n)).filter(Boolean);
     const box = $("#picked");
     if (!picked.length) box.textContent = "Pick at least one chapter to start.";
     else if (picked.length === 1) box.innerHTML = "Chapter " + picked[0].n + " · <b>" + picked[0].zh + "</b> · " + picked[0].en + " (pg. " + picked[0].pages + ")";
     else box.textContent = picked.length + " chapters · " + poolWords().length + " words";
   }
-  function poolWords() { return WORDS.filter((w) => selected.has(w.ch)); }
+  function poolWords() { return WORDS.filter((w) => w.year === year && selected.has(w.ch)); }
   function chaptersChanged() {
-    store.set("chapters", [...selected]);
+    store.set("chapters:" + year, [...selected]);
     renderChips();
     Cards.reset();
     Quiz.renderSetup();
   }
-  $("#pick-all").onclick = () => { selected = new Set(window.CHAPTERS.map((c) => c.n)); chaptersChanged(); };
+  $("#pick-all").onclick = () => { selected = new Set(book().chapters.map((c) => c.n)); chaptersChanged(); };
   $("#pick-none").onclick = () => { selected = new Set(); chaptersChanged(); };
 
   // ---------- known words ----------
-  const known = new Set(store.get("known", []));
+  // Older saves used "chapter:word" ids from the Year 1 only version.
+  const known = new Set(store.get("known", []).map((id) => (id.startsWith("y") ? id : "y1:" + id)));
   const saveKnown = () => store.set("known", [...known]);
 
   // ---------- FLASHCARDS ----------
@@ -183,7 +200,7 @@
         el("span", { class: "hint" }, "Tap to flip")
       );
       const back = el("div", { class: "face back" },
-        el("span", { class: "chap-tag" }, "Ch " + w.ch + " · " + chapterOf(w.ch).zh),
+        el("span", { class: "chap-tag" }, "Ch " + w.ch + " · " + chapterOf(w.ch, w.year).zh),
         el("div", { class: "pic", "aria-hidden": "true" }, w.pic),
         el("div", { class: "zh-mid", lang: "zh-CN" }, w.zh),
         el("div", { class: "py-big" }, w.py),
@@ -318,21 +335,24 @@
         if (!selected.size) problem = "Pick at least one chapter above.";
         else if (!types.size) problem = "Pick at least one question type.";
         else if (pool.length < 4) problem = "Pick more chapters: a quiz needs at least 4 words.";
-        else if (types.size === 1 && types.has("poem") && !poemsInPool().length) problem = "No poems in these chapters. Poems are in chapters 3, 7, 10, 12, 14, 16, 18, 20 and 22.";
+        else if (types.size === 1 && types.has("poem") && !poemsInPool().length) problem = book().poems.length
+          ? "No poems in these chapters. Year " + year + " poems are in chapter " + book().poems.map((p) => p.ch).join(", ") + "."
+          : "There are no poems in Year " + year + ".";
         startBtn.disabled = !!problem;
         msg.textContent = problem;
       }
     }
 
-    const bestKey = () => [...selected].sort((a, b) => a - b).join(",");
-    const poemsInPool = () => window.POEMS.filter((p) => selected.has(p.ch));
+    const bestKey = () => "y" + year + ":" + [...selected].sort((a, b) => a - b).join(",");
+    const poemsInPool = () => book().poems.filter((p) => selected.has(p.ch));
+    const allPoemLines = () => YEARS.flatMap((y) => BOOKS[y].poems.flatMap((x) => x.lines.map((l) => l[0])));
 
     // Pick 3 distractor words that look different from the answer on the field being asked.
     function distractors(answer, field, pool, n) {
       const sameLen = (w) => Array.from(w.zh).length === Array.from(answer.zh).length;
       const ok = (w) => w.id !== answer.id && w[field] !== answer[field] && w.en !== answer.en && w.zh !== answer.zh;
       let cands = shuffle(pool.filter(ok));
-      if (cands.length < n) cands = cands.concat(shuffle(WORDS.filter((w) => ok(w) && !cands.includes(w))));
+      if (cands.length < n) cands = cands.concat(shuffle(WORDS.filter((w) => w.year === answer.year && ok(w) && !cands.includes(w))));
       const preferred = cands.filter(sameLen), rest = cands.filter((w) => !sameLen(w));
       const out = [];
       for (const w of preferred.concat(rest)) {
@@ -349,7 +369,8 @@
         const p = poems[Math.floor(Math.random() * poems.length)];
         const i = Math.floor(Math.random() * (p.lines.length - 1));
         const right = p.lines[i + 1][0];
-        const others = shuffle(window.POEMS.flatMap((x) => x.lines.map((l) => l[0])).filter((l) => l !== right && l !== p.lines[i][0] && Array.from(l).length === Array.from(right).length)).slice(0, 3);
+        const others = shuffle([...new Set(allPoemLines())].filter((l) => l !== right && l !== p.lines[i][0] && Array.from(l).length === Array.from(right).length)).slice(0, 3);
+        if (others.length < 3) return null;
         return {
           type, word: null, poem: p, line: p.lines[i],
           options: shuffle([right, ...others]).map((t) => ({ label: t, right: t === right, zh: true })),
@@ -419,7 +440,7 @@
       } else if (q.type === "poem") {
         prompt.append(el("div", { class: "q-ask" }, "What comes next? ", el("span", { class: "zh" }, "下一句是什么？")),
           el("div", { class: "q-big-en", lang: "zh-CN", style: "font-family:var(--font-zh);font-weight:500" }, "《" + q.poem.title + "》"),
-          el("div", { class: "note" }, "唐 · " + q.poem.author + " · Chapter " + q.poem.ch),
+          el("div", { class: "note" }, q.poem.dynasty + " · " + q.poem.author + " · Chapter " + q.poem.ch),
           el("div", { class: "q-sentence", lang: "zh-CN" }, q.line[0] + "，"),
           el("div", { class: "q-sentence-en" }, q.line[1]));
       }

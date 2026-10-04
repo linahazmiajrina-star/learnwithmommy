@@ -1,0 +1,389 @@
+/* SRJKC Bahasa Cina Tahun 1 (一年级) vocabulary.
+ * Words, pinyin and example sentences come from the free pinyin + English edition at
+ * https://multilingual-malaysian.github.io/SRJKC_resources/year1/
+ *
+ * Each word: [Chinese, pinyin, English, picture, example sentence from the book (optional)]
+ */
+window.BOOKS = window.BOOKS || {};
+window.BOOKS[1] = {
+  year: 1, zh: "一年级",
+  chapters: [
+    { n: 1, zh: "新的开始", en: "A New Beginning", pages: "1–5", words: [
+      ["蓝天", "lán tiān", "blue sky", "🌤️", ""],
+      ["太阳", "tài yáng", "sun", "☀️", "太阳跟我一起走。"],
+      ["小鸟", "xiǎo niǎo", "little bird", "🐦", "小鸟儿，起得早。"],
+      ["上学", "shàng xué", "go to school", "🎒", "上学了，上学了。"],
+      ["读书", "dú shū", "read", "📖", ""],
+      ["写字", "xiě zì", "write words", "✍️", ""],
+      ["花儿", "huā er", "flower", "🌸", "花儿跟我招招手。"],
+      ["早操", "zǎo cāo", "morning exercise", "🤸", "在草地上做早操。"],
+      ["小朋友", "xiǎo péng yǒu", "children", "🧒", "小朋友，起得早。"],
+      ["公鸡", "gōng jī", "rooster", "🐓", "大公鸡，喔喔啼。"],
+      ["身体", "shēn tǐ", "body", "💪", "做早操，身体好。"],
+      ["草地", "cǎo dì", "grass field", "🌱", ""]
+    ]},
+    { n: 2, zh: "走进教室", en: "Into the Classroom", pages: "6–11", words: [
+      ["识字", "shí zì", "recognise words", "🔤", "上课了，来识字。"],
+      ["上课", "shàng kè", "class starts", "🏫", ""],
+      ["儿歌", "ér gē", "children's song", "🎵", "读儿歌，读故事。"],
+      ["故事", "gù shi", "story", "📚", ""],
+      ["学习", "xué xí", "study, learn", "📝", "天天学习长知识。"],
+      ["知识", "zhī shi", "knowledge", "🧠", ""],
+      ["眼", "yǎn", "eye", "👁️", "眼到手到心也到。"],
+      ["手", "shǒu", "hand", "✋", ""],
+      ["心", "xīn", "heart", "❤️", ""],
+      ["笔画", "bǐ huà", "strokes", "✏️", "笔画笔顺错不了。"],
+      ["早晨", "zǎo chén", "early morning", "🌅", ""],
+      ["娃娃", "wá wa", "doll, baby", "🪆", "太阳是一个娃娃。"]
+    ]},
+    { n: 3, zh: "我爱我的家", en: "I Love My Family", pages: "12–18", words: [
+      ["爸爸", "bà ba", "dad", "👨", "爸爸妈妈笑着回来了。"],
+      ["妈妈", "mā ma", "mum", "👩", ""],
+      ["哥哥", "gē ge", "older brother", "👦", "哥哥姐姐笑着回来了。"],
+      ["姐姐", "jiě jie", "older sister", "👧", ""],
+      ["门", "mén", "door", "🚪", "门开了。"],
+      ["笑声", "xiào shēng", "laughter", "😄", "全家的笑声回来了。"],
+      ["全家", "quán jiā", "whole family", "👨‍👩‍👧‍👦", ""],
+      ["星星", "xīng xing", "star", "⭐", "天上星星那么多。"],
+      ["天上", "tiān shàng", "in the sky", "🌌", ""],
+      ["三", "sān", "three", "3️⃣", "三颗星星那样明。"],
+      ["慈母", "cí mǔ", "loving mother", "🤱", "慈母手中线。"]
+    ]},
+    { n: 4, zh: "当我们同在一起", en: "When We Are Together", pages: "19–26", words: [
+      ["晚饭", "wǎn fàn", "dinner", "🍽️", "一家开心吃晚饭。"],
+      ["开心", "kāi xīn", "happy", "😊", ""],
+      ["鱼", "yú", "fish", "🐟", "有瓜有鱼还有蛋。"],
+      ["蛋", "dàn", "egg", "🥚", ""],
+      ["瓜", "guā", "melon", "🍈", ""],
+      ["妹妹", "mèi mei", "younger sister", "👧", "我跟妹妹搭积木。"],
+      ["积木", "jī mù", "building blocks", "🧱", ""],
+      ["房子", "fáng zi", "house", "🏠", "搭了房子搭学校。"],
+      ["学校", "xué xiào", "school", "🏫", ""],
+      ["机场", "jī chǎng", "airport", "🛫", ""],
+      ["城市", "chéng shì", "city", "🏙️", "这是我们的城市！"],
+      ["森林", "sēn lín", "forest", "🌳", "一片森林一片绿。"],
+      ["蜂蜜", "fēng mì", "honey", "🍯", "我爱蜂蜜甜蜜蜜。"],
+      ["甜", "tián", "sweet", "🍬", ""],
+      ["美", "měi", "beautiful", "🌺", "羊大美。"]
+    ]},
+    { n: 5, zh: "亲近大自然", en: "Close to Nature", pages: "27–31", words: [
+      ["露珠", "lù zhū", "dewdrop", "💧", "小露珠，会照相。"],
+      ["照相", "zhào xiàng", "take photos", "📷", ""],
+      ["月亮", "yuè liang", "moon", "🌙", "照星星，照月亮。"],
+      ["雨", "yǔ", "rain", "🌧️", "雨停了，雨停了。"],
+      ["山", "shān", "mountain", "⛰️", "山，更青了。"],
+      ["花", "huā", "flower", "🌼", "花，更红了。"],
+      ["草", "cǎo", "grass", "🌿", "草，更绿了。"],
+      ["小河", "xiǎo hé", "stream, little river", "🏞️", "弯弯曲曲的小河。"],
+      ["云彩", "yún cai", "clouds", "☁️", ""],
+      ["红", "hóng", "red", "🔴", ""],
+      ["绿", "lǜ", "green", "🟢", ""],
+      ["蓝", "lán", "blue", "🔵", "天，更蓝了。"]
+    ]},
+    { n: 6, zh: "数一数，比一比", en: "Count and Compare", pages: "32–38", words: [
+      ["大", "dà", "big", "🐘", "一个大，一个小。"],
+      ["小", "xiǎo", "small", "🐭", ""],
+      ["多", "duō", "many", "➕", "一边多，一边少。"],
+      ["少", "shǎo", "few", "➖", ""],
+      ["老虎", "lǎo hǔ", "tiger", "🐯", "一只老虎一只猫。"],
+      ["猫", "māo", "cat", "🐱", ""],
+      ["天鹅", "tiān é", "swan", "🦢", "一群天鹅一只鸟。"],
+      ["蚂蚁", "mǎ yǐ", "ant", "🐜", "小蚂蚁，搬小虫。"],
+      ["虫", "chóng", "bug, insect", "🐛", ""],
+      ["两", "liǎng", "two (of something)", "2️⃣", "两个搬，有点儿重。"],
+      ["重", "zhòng", "heavy", "🏋️", ""],
+      ["四", "sì", "four", "4️⃣", "四个五个六七个。"],
+      ["五", "wǔ", "five", "5️⃣", ""],
+      ["数一数", "shǔ yi shǔ", "count", "🔢", "数一数，瞧一瞧。"]
+    ]},
+    { n: 7, zh: "动物乐园", en: "Animal Paradise", pages: "39–44", words: [
+      ["鹅", "é", "goose", "🪿", "鹅，鹅，鹅。"],
+      ["白毛", "bái máo", "white feathers", "🪶", "白毛浮绿水。"],
+      ["水", "shuǐ", "water", "🌊", ""],
+      ["歌", "gē", "song", "🎶", ""],
+      ["鼠", "shǔ", "mouse", "🐁", "鼠老师画猫。"],
+      ["画", "huà", "draw", "🎨", ""],
+      ["眼睛", "yǎn jing", "eyes", "👀", "眼睛要画小。"],
+      ["牙齿", "yá chǐ", "teeth", "🦷", "牙齿一个也不画。"],
+      ["小腿", "xiǎo tuǐ", "lower leg", "🦵", "小腿要画短。"],
+      ["睡大觉", "shuì dà jiào", "have a big sleep", "😴", "我们可以睡大觉。"],
+      ["蜜蜂", "mì fēng", "bee", "🐝", "小蜜蜂，你早哇！"],
+      ["花园", "huā yuán", "garden", "🏡", "你就飞到花园了。"],
+      ["朋友", "péng you", "friend", "🤝", ""]
+    ]},
+    { n: 8, zh: "植物真有趣", en: "Plants Are Fun", pages: "45–52", words: [
+      ["香蕉", "xiāng jiāo", "banana", "🍌", "香蕉弯弯像滑梯。"],
+      ["滑梯", "huá tī", "slide", "🛝", ""],
+      ["飞机", "fēi jī", "aeroplane", "✈️", "下来好像坐飞机。"],
+      ["唱歌", "chàng gē", "sing", "🎤", "森林会唱歌吗？"],
+      ["树", "shù", "tree", "🌳", "老树，老树。"],
+      ["竹林", "zhú lín", "bamboo forest", "🎋", ""],
+      ["植物园", "zhí wù yuán", "botanical garden", "🌺", "每座大山都是一个植物园。"],
+      ["动物园", "dòng wù yuán", "zoo", "🦁", ""],
+      ["晴", "qíng", "sunny", "🌞", "雨对晴。"],
+      ["听", "tīng", "listen", "👂", "说对听。"],
+      ["伤心", "shāng xīn", "sad", "😢", "伤心对开心。"],
+      ["吵闹", "chǎo nào", "noisy", "📢", "吵闹对安静。"],
+      ["安静", "ān jìng", "quiet", "🤫", ""]
+    ]},
+    { n: 9, zh: "心爱的东西", en: "Things I Love", pages: "53–59", words: [
+      ["睡衣", "shuì yī", "pyjamas", "🛌", "天空换上黑色睡衣。"],
+      ["黑色", "hēi sè", "black", "⚫", ""],
+      ["天空", "tiān kōng", "sky", "🌌", ""],
+      ["夜", "yè", "night", "🌃", "夜悄悄来了。"],
+      ["树林", "shù lín", "woods", "🌲", "树林换上黑色睡衣。"],
+      ["美丽", "měi lì", "beautiful", "🌈", "只有我的睡衣最美丽。"],
+      ["蓝色", "lán sè", "blue colour", "🔵", ""],
+      ["绿色", "lǜ sè", "green colour", "🟢", ""],
+      ["铅笔", "qiān bǐ", "pencil", "✏️", "我用铅笔写字。"],
+      ["鸟", "niǎo", "bird", "🐦", ""],
+      ["画画", "huà huà", "draw pictures", "🖍️", "我用铅笔画画。"],
+      ["短", "duǎn", "short", "📏", "铅笔短了。"]
+    ]},
+    { n: 10, zh: "欢乐时光", en: "Happy Times", pages: "60–65", words: [
+      ["沙滩", "shā tān", "beach", "🏖️", "我在沙滩造小船。"],
+      ["小船", "xiǎo chuán", "little boat", "⛵", ""],
+      ["脚", "jiǎo", "foot", "🦶", "就是一双小脚板。"],
+      ["公园", "gōng yuán", "park", "🏞️", "公园里，风儿轻轻吹。"],
+      ["风", "fēng", "wind", "🌬️", ""],
+      ["树叶", "shù yè", "leaf", "🍃", "树叶轻轻地飘落。"],
+      ["剪刀", "jiǎn dāo", "scissors", "✂️", ""],
+      ["头", "tóu", "head", "🙆", "有的飘落在我的头上。"],
+      ["红豆", "hóng dòu", "red bean", "🫘", "红豆生南国。"],
+      ["花瓣", "huā bàn", "petal", "🌸", "捡一片花瓣。"],
+      ["快乐", "kuài lè", "happy", "😁", "驶向快乐的明天。"],
+      ["明天", "míng tiān", "tomorrow", "📅", ""]
+    ]},
+    { n: 11, zh: "我做得到", en: "I Can Do It", pages: "66–70", words: [
+      ["你好", "nǐ hǎo", "hello", "👋", "“你好，你好！”拉拉手。"],
+      ["老师", "lǎo shī", "teacher", "🧑‍🏫", "见到老师说声早。"],
+      ["谢谢", "xiè xie", "thank you", "🙏", "“谢谢，谢谢！”握握手。"],
+      ["同学", "tóng xué", "classmate", "🧑‍🤝‍🧑", "同学见面说声好。"],
+      ["礼貌", "lǐ mào", "polite", "🙇", "我们对人有礼貌。"],
+      ["买", "mǎi", "buy", "🛒", "我要买小船、小汽车。"],
+      ["玩具", "wán jù", "toy", "🧸", ""],
+      ["汽车", "qì chē", "car", "🚗", ""],
+      ["钱", "qián", "money", "💰", "我还是把钱存起来吧。"],
+      ["火车", "huǒ chē", "train", "🚂", "火车来啦！"],
+      ["椅子", "yǐ zi", "chair", "🪑", ""],
+      ["小鸡", "xiǎo jī", "chick", "🐥", "八只小鸡东看看，西看看。"],
+      ["八", "bā", "eight", "8️⃣", ""],
+      ["九", "jiǔ", "nine", "9️⃣", "母鸡将九把小椅子连在一起。"]
+    ]},
+    { n: 12, zh: "童话天地", en: "Fairy Tale World", pages: "71–80", words: [
+      ["海马", "hǎi mǎ", "seahorse", "🌊", "小海马笑着说。"],
+      ["翅膀", "chì bǎng", "wings", "🪽", "小海马长出了翅膀。"],
+      ["父亲节", "fù qīn jié", "Father's Day", "👔", "父亲节快乐！"],
+      ["青蛙", "qīng wā", "frog", "🐸", ""],
+      ["荷叶", "hé yè", "lotus leaf", "🪷", "回荷叶上一看。"],
+      ["跳水", "tiào shuǐ", "diving", "🤽", ""],
+      ["第一名", "dì yī míng", "first place", "🥇", "跳水第一名。"],
+      ["兔", "tù", "rabbit", "🐰", "小兔古利特。"],
+      ["斑马", "bān mǎ", "zebra", "🦓", ""],
+      ["影子", "yǐng zi", "shadow", "👤", "瞧，咱们的影子多漂亮！"],
+      ["漂亮", "piào liang", "pretty", "💃", ""],
+      ["羽毛", "yǔ máo", "feather", "🪶", "洁白羽毛红脚儿。"],
+      ["肚子", "dù zi", "tummy", "😋", "肚子饿了找食物。"],
+      ["饿", "è", "hungry", "🍽️", "我饿了。"]
+    ]},
+    { n: 13, zh: "我爱爸爸妈妈", en: "I Love Mum and Dad", pages: "81–85", words: [
+      ["晚上", "wǎn shang", "evening", "🌙", "晚上，我在屋里走。"],
+      ["手影", "shǒu yǐng", "hand shadow", "🤟", "爸爸说，这是手影。"],
+      ["灯光", "dēng guāng", "lamplight", "💡", ""],
+      ["墙", "qiáng", "wall", "🧱", ""],
+      ["拍手", "pāi shǒu", "clap hands", "👏", ""],
+      ["下雨", "xià yǔ", "to rain", "🌧️", "下雨了。"],
+      ["雨伞", "yǔ sǎn", "umbrella", "☂️", "啊，她没带雨伞。"],
+      ["买菜", "mǎi cài", "buy groceries", "🥬", "妈妈出门买菜了。"],
+      ["回家", "huí jiā", "go home", "🏠", ""],
+      ["纸盒", "zhǐ hé", "paper box", "📦", "她会顶着纸盒回家吗？"]
+    ]},
+    { n: 14, zh: "想象的世界", en: "World of Imagination", pages: "86–91", words: [
+      ["鞋子", "xié zi", "shoes", "👟", "我想发明一双鞋子。"],
+      ["发明", "fā míng", "invent", "💡", ""],
+      ["书本", "shū běn", "book", "📕", ""],
+      ["蝴蝶", "hú dié", "butterfly", "🦋", "一只花蝴蝶停在窗前的红花上。"],
+      ["窗", "chuāng", "window", "🪟", ""],
+      ["报纸", "bào zhǐ", "newspaper", "📰", ""],
+      ["弟弟", "dì di", "younger brother", "👦", ""],
+      ["童话", "tóng huà", "fairy tale", "🧚", ""],
+      ["对不起", "duì bu qǐ", "sorry", "🙇", "对不起，我不认识她们的字！"],
+      ["春", "chūn", "spring (season)", "🌱", "春眠不觉晓。"],
+      ["月牙", "yuè yá", "crescent moon", "🌙", "天上一个月牙。"],
+      ["浪花", "làng huā", "spray of waves", "🌊", ""]
+    ]},
+    { n: 15, zh: "友谊花朵处处开", en: "Friendship Blooms Everywhere", pages: "92–99", words: [
+      ["圆", "yuán", "round", "⭕", "太阳圆圆红彤彤。"],
+      ["小鼓", "xiǎo gǔ", "little drum", "🥁", "小鼓圆圆响咚咚。"],
+      ["皮球", "pí qiú", "ball", "⚽", "皮球圆圆蹦蹦跳。"],
+      ["气球", "qì qiú", "balloon", "🎈", "气球圆圆飘空中。"],
+      ["生气", "shēng qì", "angry", "😠", "我才不会生气呢！"],
+      ["好朋友", "hǎo péng you", "good friend", "🤗", "我们是好朋友。"],
+      ["笑脸", "xiào liǎn", "smiling face", "😀", ""],
+      ["鹿", "lù", "deer", "🦌", "小鹿生病了。"],
+      ["生病", "shēng bìng", "fall sick", "🤒", ""],
+      ["窝", "wō", "nest", "🪺", "飞到他的头上搭窝。"],
+      ["白色", "bái sè", "white", "⚪", ""]
+    ]},
+    { n: 16, zh: "做情绪的小主人", en: "Master of My Feelings", pages: "100–107", words: [
+      ["怕", "pà", "afraid", "😨", "我很怕黑夜。"],
+      ["黑夜", "hēi yè", "dark night", "🌑", ""],
+      ["洗澡", "xǐ zǎo", "take a bath", "🛁", ""],
+      ["停电", "tíng diàn", "power cut", "🔌", ""],
+      ["小狗", "xiǎo gǒu", "puppy", "🐶", "只见小狗在跑来跑去。"],
+      ["月光", "yuè guāng", "moonlight", "🌕", ""],
+      ["火球", "huǒ qiú", "fireball", "🔥", "肚子里像有一个火球。"],
+      ["蜻蜓", "qīng tíng", "dragonfly", "💙", ""],
+      ["高兴", "gāo xìng", "glad", "😃", ""],
+      ["哭", "kū", "cry", "😭", "宝宝哭了妈妈抱。"],
+      ["抱", "bào", "hug, carry", "🫂", "手加包，是抱字。"],
+      ["跑", "pǎo", "run", "🏃", ""],
+      ["泡", "pào", "bubble", "🫧", ""],
+      ["饱", "bǎo", "full (after eating)", "😌", "吃饱快乐来唱歌。"]
+    ]},
+    { n: 17, zh: "我想知道为什么", en: "I Want to Know Why", pages: "108–112", words: [
+      ["云", "yún", "cloud", "☁️", "云儿住在哪里？"],
+      ["力气", "lì qi", "strength", "💪", ""],
+      ["五颜六色", "wǔ yán liù sè", "colourful", "🌈", "会开出五颜六色的花儿。"],
+      ["为什么", "wèi shén me", "why", "❓", "妈妈，为什么？"],
+      ["大海", "dà hǎi", "sea", "🌊", "看着蓝蓝的大海。"],
+      ["休息", "xiū xi", "rest", "🛌", ""],
+      ["兄弟", "xiōng dì", "brothers", "👬", ""],
+      ["牛角", "niú jiǎo", "cow's horn", "🐮", "牛角弯弯在两边。"],
+      ["眉毛", "méi mao", "eyebrow", "🤨", "眉毛弯弯在脸上。"],
+      ["脸", "liǎn", "face", "🙂", ""],
+      ["弯弯", "wān wān", "curved", "🌙", "月亮弯弯在天上。"],
+      ["阳光", "yáng guāng", "sunshine", "🌤️", ""]
+    ]},
+    { n: 18, zh: "我爱我的国家", en: "I Love My Country", pages: "113–121", words: [
+      ["国庆", "guó qìng", "National Day", "🎉", "八月三十一日，就是我国的国庆。"],
+      ["国旗", "guó qí", "national flag", "🚩", ""],
+      ["国歌", "guó gē", "national anthem", "🎺", "听，国歌响起了！"],
+      ["马来西亚", "mǎ lái xī yà", "Malaysia", "🇲🇾", "阳光下的马来西亚，多么美丽。"],
+      ["农田", "nóng tián", "farmland", "🚜", ""],
+      ["稻米", "dào mǐ", "rice, paddy", "🌾", "稻米金黄。"],
+      ["果园", "guǒ yuán", "orchard", "🍎", ""],
+      ["跳舞", "tiào wǔ", "dance", "💃", ""],
+      ["电视", "diàn shì", "television", "📺", ""],
+      ["明月", "míng yuè", "bright moon", "🌕", "床前明月光。"],
+      ["故乡", "gù xiāng", "hometown", "🏘️", "低头思故乡。"]
+    ]},
+    { n: 19, zh: "设备完善生活好", en: "Good Facilities, Good Life", pages: "122–127", words: [
+      ["天桥", "tiān qiáo", "overhead bridge", "🌉", "我背着书包从天桥上走过。"],
+      ["书包", "shū bāo", "school bag", "🎒", ""],
+      ["车子", "chē zi", "vehicle", "🚙", ""],
+      ["彩虹", "cǎi hóng", "rainbow", "🌈", "天桥，好比一道彩虹。"],
+      ["害怕", "hài pà", "scared", "😱", ""],
+      ["路灯", "lù dēng", "street lamp", "🏮", "一排排路灯还不睡觉？"],
+      ["叔叔", "shū shu", "uncle", "👨", "叔叔阿姨下班了。"],
+      ["阿姨", "ā yí", "aunty", "👩", ""],
+      ["下班", "xià bān", "finish work", "🕔", ""],
+      ["光明", "guāng míng", "light, brightness", "✨", ""],
+      ["安全", "ān quán", "safe", "🦺", "安安全全回家。"],
+      ["闹市", "nào shì", "busy town", "🏙️", "学校在闹市中。"]
+    ]},
+    { n: 20, zh: "带来快乐的地方", en: "Places That Bring Joy", pages: "128–135", words: [
+      ["菜园", "cài yuán", "vegetable garden", "🥕", "邻家的菜园。"],
+      ["伯伯", "bó bo", "uncle (elder)", "👴", ""],
+      ["浇水", "jiāo shuǐ", "water the plants", "🚿", "我看见张伯伯在浇水。"],
+      ["叶子", "yè zi", "leaves", "🍃", ""],
+      ["青菜", "qīng cài", "green vegetables", "🥬", ""],
+      ["星期", "xīng qī", "week", "📆", ""],
+      ["大象", "dà xiàng", "elephant", "🐘", "看，长鼻子的大象。"],
+      ["鼻子", "bí zi", "nose", "👃", ""],
+      ["耳朵", "ěr duo", "ears", "👂", "长耳朵的兔子。"],
+      ["猴子", "hóu zi", "monkey", "🐒", "长尾巴的猴子。"],
+      ["尾巴", "wěi ba", "tail", "🦊", ""],
+      ["水牛", "shuǐ niú", "buffalo", "🐃", "水牛正在泥地里谈天。"],
+      ["鸭子", "yā zi", "duck", "🦆", "鸭子请朋友到水里玩。"],
+      ["狮子", "shī zi", "lion", "🦁", "前面狮子在睡觉！"]
+    ]},
+    { n: 21, zh: "读故事，懂道理", en: "Stories With Lessons", pages: "136–144", words: [
+      ["老鼠", "lǎo shǔ", "mouse, rat", "🐭", "一只老鼠从我嘴巴跑到肚子里去了。"],
+      ["嘴巴", "zuǐ ba", "mouth", "👄", ""],
+      ["看病", "kàn bìng", "treat the sick", "🩺", "阿凡提常常给邻人看病。"],
+      ["容易", "róng yì", "easy", "👍", "这可容易呀！"],
+      ["聪明", "cōng ming", "clever", "🧠", ""],
+      ["大蛇", "dà shé", "big snake", "🐍", ""],
+      ["逃跑", "táo pǎo", "run away", "🏃", "小狮子一听，转身逃跑。"],
+      ["熊猫", "xióng māo", "panda", "🐼", ""],
+      ["山羊", "shān yáng", "goat", "🐐", ""],
+      ["竹子", "zhú zi", "bamboo", "🎋", ""],
+      ["青草", "qīng cǎo", "green grass", "🌿", "世界上最好吃的东西，是青草。"],
+      ["鸡肉", "jī ròu", "chicken meat", "🍗", ""]
+    ]},
+    { n: 22, zh: "我长大了", en: "I Have Grown Up", pages: "145–152", words: [
+      ["小猴", "xiǎo hóu", "little monkey", "🐵", "小猴被公鸡的啼叫声吵醒。"],
+      ["苹果", "píng guǒ", "apple", "🍎", "小猴看到树上的苹果红了。"],
+      ["树枝", "shù zhī", "branch", "🪵", ""],
+      ["痛", "tòng", "painful", "🤕", "弄得我好痛！"],
+      ["长大", "zhǎng dà", "grow up", "🌱", "啊，是谁没长大呀？"],
+      ["垃圾", "lā jī", "rubbish", "🗑️", "爸爸把垃圾拾起来，丢进垃圾桶。"],
+      ["院子", "yuàn zi", "yard", "🏡", "妈妈去扫院子里的积水。"],
+      ["干净", "gān jìng", "clean", "🧼", ""],
+      ["小猫", "xiǎo māo", "kitten", "🐱", "一只小猫可怜地叫着。"],
+      ["狗", "gǒu", "dog", "🐕", ""],
+      ["男孩", "nán hái", "boy", "👦", ""],
+      ["黄河", "huáng hé", "Yellow River", "🏞️", "黄河入海流。"]
+    ]}
+  ],
+  /* Classical poems (古诗) in this book, for the "next line" quiz. */
+  poems: [
+    { ch: 3, title: "游子吟", dynasty: "唐", author: "孟郊", lines: [
+      ["慈母手中线", "cí mǔ shǒu zhōng xiàn"],
+      ["游子身上衣", "yóu zǐ shēn shàng yī"],
+      ["临行密密缝", "lín xíng mì mì féng"],
+      ["意恐迟迟归", "yì kǒng chí chí guī"],
+      ["谁言寸草心", "shuí yán cùn cǎo xīn"],
+      ["报得三春晖", "bào dé sān chūn huī"]
+    ]},
+    { ch: 7, title: "咏鹅", dynasty: "唐", author: "骆宾王", lines: [
+      ["鹅，鹅，鹅", "é, é, é"],
+      ["曲项向天歌", "qū xiàng xiàng tiān gē"],
+      ["白毛浮绿水", "bái máo fú lǜ shuǐ"],
+      ["红掌拨清波", "hóng zhǎng bō qīng bō"]
+    ]},
+    { ch: 10, title: "相思", dynasty: "唐", author: "王维", lines: [
+      ["红豆生南国", "hóng dòu shēng nán guó"],
+      ["春来发几枝", "chūn lái fā jǐ zhī"],
+      ["愿君多采撷", "yuàn jūn duō cǎi xié"],
+      ["此物最相思", "cǐ wù zuì xiāng sī"]
+    ]},
+    { ch: 12, title: "回乡偶书", dynasty: "唐", author: "贺知章", lines: [
+      ["少小离家老大回", "shào xiǎo lí jiā lǎo dà huí"],
+      ["乡音无改鬓毛衰", "xiāng yīn wú gǎi bìn máo shuāi"],
+      ["儿童相见不相识", "ér tóng xiāng jiàn bù xiāng shí"],
+      ["笑问客从何处来", "xiào wèn kè cóng hé chù lái"]
+    ]},
+    { ch: 14, title: "春晓", dynasty: "唐", author: "孟浩然", lines: [
+      ["春眠不觉晓", "chūn mián bù jué xiǎo"],
+      ["处处闻啼鸟", "chù chù wén tí niǎo"],
+      ["夜来风雨声", "yè lái fēng yǔ shēng"],
+      ["花落知多少", "huā luò zhī duō shǎo"]
+    ]},
+    { ch: 16, title: "清明", dynasty: "唐", author: "杜牧", lines: [
+      ["清明时节雨纷纷", "qīng míng shí jié yǔ fēn fēn"],
+      ["路上行人欲断魂", "lù shang xíng rén yù duàn hún"],
+      ["借问酒家何处有", "jiè wèn jiǔ jiā hé chù yǒu"],
+      ["牧童遥指杏花村", "mù tóng yáo zhǐ xìng huā cūn"]
+    ]},
+    { ch: 18, title: "静夜思", dynasty: "唐", author: "李白", lines: [
+      ["床前明月光", "chuáng qián míng yuè guāng"],
+      ["疑是地上霜", "yí shì dì shàng shuāng"],
+      ["举头望明月", "jǔ tóu wàng míng yuè"],
+      ["低头思故乡", "dī tóu sī gù xiāng"]
+    ]},
+    { ch: 20, title: "悯农", dynasty: "唐", author: "李绅", lines: [
+      ["锄禾日当午", "chú hé rì dāng wǔ"],
+      ["汗滴禾下土", "hàn dī hé xià tǔ"],
+      ["谁知盘中餐", "shuí zhī pán zhōng cān"],
+      ["粒粒皆辛苦", "lì lì jiē xīn kǔ"]
+    ]},
+    { ch: 22, title: "登鹳雀楼", dynasty: "唐", author: "王之涣", lines: [
+      ["白日依山尽", "bái rì yī shān jìn"],
+      ["黄河入海流", "huáng hé rù hǎi liú"],
+      ["欲穷千里目", "yù qióng qiān lǐ mù"],
+      ["更上一层楼", "gèng shàng yì céng lóu"]
+    ]}
+  ]
+};
