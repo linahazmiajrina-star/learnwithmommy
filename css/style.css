@@ -135,6 +135,7 @@ header.top {
 .face .hint { position: absolute; bottom: 12px; font-size: 0.85rem; color: var(--muted); }
 .face .chap-tag { position: absolute; top: 12px; left: 16px; font-size: 0.8rem; color: var(--muted); font-weight: 700; }
 .face .known-tag { position: absolute; top: 12px; right: 16px; font-size: 0.8rem; color: var(--good); font-weight: 700; }
+.en-front { font-size: 1.3rem; font-weight: 700; color: var(--muted); max-width: 100%; overflow-wrap: anywhere; }
 .back .py-big { font-size: 1.9rem; font-weight: 700; color: var(--accent); }
 .back .en-big { font-size: 1.5rem; font-weight: 700; }
 .back .zh-mid { font-family: var(--font-zh); font-size: 2rem; }

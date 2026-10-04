@@ -161,7 +161,7 @@
   const Cards = (function () {
     const view = $("#view-cards");
     let deck = [], idx = 0, flipped = false;
-    let showPy = store.get("showPy", true), showPic = store.get("showPic", true), onlyLearning = false;
+    let showPy = store.get("showPy", true), showPic = store.get("showPic", true), showEn = store.get("showEn", true), onlyLearning = false;
 
     function reset(list) {
       let words = list || poolWords();
@@ -177,6 +177,7 @@
         el("div", { class: "toggles" },
           toggle("opt-py", "Pinyin on front", showPy, (v) => { showPy = v; store.set("showPy", v); render(); }),
           toggle("opt-pic", "Picture on front", showPic, (v) => { showPic = v; store.set("showPic", v); render(); }),
+          toggle("opt-en", "English on front", showEn, (v) => { showEn = v; store.set("showEn", v); render(); }),
           toggle("opt-learning", "Hide words I know", onlyLearning, (v) => { onlyLearning = v; reset(); })
         )
       );
@@ -197,6 +198,7 @@
         showPic ? el("div", { class: "pic", "aria-hidden": "true" }, w.pic) : null,
         showPy ? pyRow(w.zh, w.py) : null,
         tzgRow(w.zh),
+        showEn ? el("div", { class: "en-front" }, w.en) : null,
         el("span", { class: "hint" }, "Tap to flip")
       );
       const back = el("div", { class: "face back" },
