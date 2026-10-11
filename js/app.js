@@ -556,6 +556,33 @@
   $("#tab-cards").onclick = () => showTab("cards");
   $("#tab-quiz").onclick = () => showTab("quiz");
 
+  // ---------- install as an app ----------
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => { /* the site still works online */ });
+  }
+  const installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  if (!installed && location.protocol.startsWith("http")) {
+    let installPrompt = null;
+    const box = $("#install"), help = $("#install-help");
+    const isApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    box.hidden = false;
+    window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; });
+    window.addEventListener("appinstalled", () => { box.hidden = true; });
+    $("#install-btn").onclick = async () => {
+      if (installPrompt) {
+        installPrompt.prompt();
+        const choice = await installPrompt.userChoice;
+        installPrompt = null;
+        if (choice.outcome === "accepted") box.hidden = true;
+        return;
+      }
+      help.textContent = isApple
+        ? "On iPhone or iPad: tap the Share button (the square with an arrow ⬆︎), then “Add to Home Screen”."
+        : "Open the browser menu (⋮ or ⋯) and choose “Install app” or “Add to Home screen”.";
+      help.hidden = false;
+    };
+  }
+
   renderChips();
   Cards.reset();
   Quiz.renderSetup();

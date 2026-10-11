@@ -25,6 +25,17 @@ Progress (known words, best scores) is saved in the browser only.
 
 Open `index.html` in a browser, or turn on GitHub Pages: **Settings → Pages → Deploy from a branch**, choose this branch and `/ (root)`.
 
+## Install it as an app
+
+The GitHub Pages site can be installed like an app, with its own 学 icon, full screen and working offline:
+
+- **iPhone / iPad:** open the site in Safari, tap Share ⬆︎ → **Add to Home Screen**.
+- **Android / Chrome / Edge:** tap **📲 Install as an app** at the bottom of the page, or the browser menu → **Install app**.
+
+`sw.js` keeps a copy of every file on the device. After you push a change, an installed app picks it up
+the second time it is opened (the first open downloads it in the background). If you add a new file, list it in `SHELL` in `sw.js`.
+The icons in `icons/` are plain PNGs; replace them with the same sizes to change the look.
+
 ## Edit the words
 
 Each year's words live in `js/data/yearN.js`: `[Chinese, pinyin, English, picture emoji, example sentence]`.

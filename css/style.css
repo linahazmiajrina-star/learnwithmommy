@@ -46,8 +46,9 @@ body {
   font-family: var(--font-body);
   font-size: 17px;
   line-height: 1.5;
-  padding-inline: 16px;
-  padding-block: 0 40px;
+  /* the safe-area insets keep content clear of the notch and home bar when opened as an installed app */
+  padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  -webkit-tap-highlight-color: transparent;
 }
 .wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -122,6 +123,7 @@ header.top {
   position: relative; width: 100%; min-height: 360px; border: 0; padding: 0; background: none;
   display: grid; /* both faces share one cell, so the card grows to fit the taller face */
   transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
+  -webkit-user-select: none; user-select: none; /* a long press on a card shouldn't select the text */
 }
 .card.flipped { transform: rotateY(180deg); }
 .face {
@@ -219,6 +221,9 @@ header.top {
 
 .note { color: var(--muted); font-size: 0.9rem; text-align: center; }
 .note a { color: var(--accent); }
+.install { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.install[hidden] { display: none; }
+.install .note { margin: 0; max-width: 34em; }
 footer { color: var(--muted); font-size: 0.85rem; text-align: center; }
 footer a { color: var(--accent); }
 

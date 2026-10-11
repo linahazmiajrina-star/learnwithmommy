@@ -5,9 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Learn with Mommy · 华文</title>
 <meta name="description" content="Flashcards and quizzes for SRJKC Bahasa Cina Years 1–6 (一至六年级华文), with pinyin, English and sound.">
+<meta name="theme-color" content="#f3f7f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11191d" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="学华文">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Noto+Sans+SC:wght@500;700&family=ZCOOL+KuaiLe&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Noto+Sans+SC:wght@500;700&family=ZCOOL+KuaiLe&display=swap" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -39,6 +47,11 @@
 
   <main id="view-cards"></main>
   <main id="view-quiz" hidden></main>
+
+  <div class="install" id="install" hidden>
+    <button class="btn" id="install-btn">📲 Install as an app</button>
+    <p class="note" id="install-help" hidden></p>
+  </div>
 
   <footer>
     Words, pinyin and sentences from the free
