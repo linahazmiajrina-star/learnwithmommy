@@ -25,6 +25,10 @@ Flashcards and quizzes for Malaysian primary school subjects. Pick a subject on 
 - **Quiz** – 5, 10 or 20 questions from the chapters you pick: meaning, picture → word, listen → word, fill in the blank
   (sentences from the book), plus pinyin and the next line of the Tang poems (古诗) for Chinese, and the missing letter for English.
   Mistakes can be practised again as flashcards.
+- **Test 模拟考** (Chinese, `exam.html`) – a practice exam for the units you pick, grouped into sections like a school paper:
+拼音, 认字 (listen), 看图, 填空, 量词, 部首, 反义词, 排列句子 (tap the words into order) and 古诗. It gives a score out of 100,
+stars, and a list of mistakes to redo. Measure words, radicals and opposites are common lower-primary skills kept in `exam.html`,
+not tied to a unit.
 
 Progress (known words, best scores) is saved in the browser only, separately for each subject.
 

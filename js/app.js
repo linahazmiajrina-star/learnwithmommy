@@ -703,6 +703,7 @@
     $("#credit").innerHTML = S.credit;
     document.title = "Learn with Mommy · " + S.name;
     renderYears();
+    $("#tab-test").hidden = S.id !== "chinese";
     showTab(tab);
   }
 
@@ -716,6 +717,8 @@
   }
   $("#tab-cards").onclick = () => showTab("cards");
   $("#tab-quiz").onclick = () => showTab("quiz");
+  // The practice exam is its own page (exam.html); it opens on the year picked here.
+  $("#tab-test").onclick = () => { location.href = "exam.html#" + year; };
   $("#back").onclick = () => { if (cameFromHome) history.back(); else location.hash = ""; };
 
   function route() {

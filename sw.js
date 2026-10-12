@@ -1,10 +1,11 @@
 /* Offline support. Every file is served from the phone's cache straight away and refreshed in the background,
  * so the app opens with no internet, and an edit pushed to GitHub shows up the second time the app is opened.
  * Add any new file the app needs to SHELL so it works offline from the first visit. */
-const APP_CACHE = "lwm-app-v2";
+const APP_CACHE = "lwm-app-v3";
 const FONT_CACHE = "lwm-fonts-v1";
 const SHELL = [
   "./",
+  "exam.html",
   "css/style.css",
   "js/app.js",
   "js/subjects.js",
