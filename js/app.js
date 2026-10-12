@@ -22,53 +22,95 @@
     }
     return a;
   };
-  const store = {
+  const makeStore = (prefix) => ({
     get(key, fallback) {
-      try { const v = localStorage.getItem("lwm:" + key); return v == null ? fallback : JSON.parse(v); }
+      try { const v = localStorage.getItem(prefix + key); return v == null ? fallback : JSON.parse(v); }
       catch (e) { return fallback; }
     },
-    set(key, val) { try { localStorage.setItem("lwm:" + key, JSON.stringify(val)); } catch (e) { /* ignore */ } }
-  };
+    set(key, val) { try { localStorage.setItem(prefix + key, JSON.stringify(val)); } catch (e) { /* ignore */ } }
+  });
   const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const chars = (s) => Array.from(s);
 
-  // ---------- data ----------
-  const BOOKS = window.BOOKS;
-  const YEARS = Object.keys(BOOKS).map(Number).sort((a, b) => a - b);
-  const WORDS = [];
-  YEARS.forEach((y) => BOOKS[y].chapters.forEach((c) => c.words.forEach(([zh, py, en, pic, sent]) => {
-    WORDS.push({ id: "y" + y + ":" + c.n + ":" + zh, year: y, ch: c.n, zh, py, en, pic, sent });
-  })));
-  let year = store.get("year", 1);
-  if (!BOOKS[year]) year = YEARS[0];
-  const book = () => BOOKS[year];
-  const chapterOf = (n, y) => BOOKS[y || year].chapters.find((c) => c.n === n);
+  // ---------- subjects ----------
+  // What a subject in js/subjects.js gets when it doesn't say otherwise.
+  const DEFAULTS = {
+    lang: "ms-MY", voice: "Malay", dir: "ltr", font: "var(--font-body)",
+    fields: ["term", "helper", "meaning", "pic", "sent"], helper: null, meaning: "Meaning", unit: "Chapter",
+    boxes: false, letters: false, credit: "", local: {},
+    cheer: { right: ["Great job!", "Correct!", "Well done!", "Excellent!"], full: "Full marks!", good: "Well done!", more: "Keep trying!", allKnown: "Great job!" }
+  };
+  const ALL_YEARS = [1, 2, 3, 4, 5, 6];
+  const yearsOf = (id) => Object.keys(BOOKS[id] || {}).map(Number).sort((a, b) => a - b);
+
+  // The open subject and everything loaded for it.
+  let S = null, db = null, books = {}, WORDS = [], year = 1, selected = new Set(), known = new Set();
+  const book = () => books[year];
+  const chapterOf = (n, y) => books[y || year].chapters.find((c) => c.n === n);
+  const chapName = (c) => c.zh || c.title;        // Chinese books name chapters zh/en, the others title/sub
+  const chapSub = (c) => c.en || c.sub || "";
+  const chapTag = (c) => (c.label ? chapName(c) : (S.unit === "Chapter" ? "Ch" : S.unit) + " " + c.n);
+  const units = () => S.unit.toLowerCase() + "s";
+
+  function loadSubject(id) {
+    const def = SUBJECTS.find((s) => s.id === id);
+    S = Object.assign({}, DEFAULTS, def, { title: def.title || def.name, cheer: Object.assign({}, DEFAULTS.cheer, def.cheer) });
+    // Chinese keeps the original "lwm:" keys, so progress saved before there were other subjects still loads.
+    db = makeStore(id === "chinese" ? "lwm:" : "lwm:" + id + ":");
+    books = BOOKS[id];
+    WORDS = [];
+    yearsOf(id).forEach((y) => books[y].chapters.forEach((c) => c.words.forEach((row) => {
+      const w = { year: y, ch: c.n, helper: "", sent: "" };
+      S.fields.forEach((f, i) => { if (row[i] != null) w[f] = row[i]; });
+      w.id = "y" + y + ":" + c.n + ":" + w.term;
+      WORDS.push(w);
+    })));
+    year = db.get("year", yearsOf(id)[0]);
+    if (!books[year]) year = yearsOf(id)[0];
+    selected = loadSelected();
+    // Older saves used "chapter:word" ids from the Year 1 only version.
+    known = new Set(db.get("known", []).map((k) => (k.startsWith("y") ? k : "y1:" + k)));
+    pickVoice();
+
+    $("#subject").style.setProperty("--font-term", S.font);
+    const L = S.local;
+    $("#tab-cards-local").textContent = L.cards || "";
+    $("#tab-quiz-local").textContent = L.quiz || "";
+    $("#years-label").textContent = "Year" + (L.year ? " " + L.year : "");
+    $("#units-label").textContent = S.unit + "s" + (L.chapters ? " " + L.chapters : "");
+    Cards.load();
+    Quiz.load();
+    renderChips();
+    Cards.reset();
+    Quiz.renderSetup();
+  }
 
   // ---------- speech ----------
-  let zhVoice = null;
+  const canSpeak = "speechSynthesis" in window;
+  let voice = null;
   function pickVoice() {
-    if (!("speechSynthesis" in window)) return;
+    voice = null;
+    if (!canSpeak || !S) return;
+    const want = S.lang.toLowerCase(), base = want.split("-")[0];
+    const lang = (v) => v.lang.toLowerCase().replace("_", "-");
     const voices = speechSynthesis.getVoices();
-    zhVoice = voices.find((v) => /zh[-_]CN/i.test(v.lang)) ||
-              voices.find((v) => /^zh/i.test(v.lang) && !/HK|TW/i.test(v.lang)) ||
-              voices.find((v) => /^zh/i.test(v.lang)) || null;
+    voice = voices.find((v) => lang(v) === want) ||
+            voices.find((v) => lang(v).startsWith(base) && !/hk|tw/.test(lang(v))) ||
+            voices.find((v) => lang(v).startsWith(base)) || null;
   }
-  if ("speechSynthesis" in window) {
-    pickVoice();
-    speechSynthesis.onvoiceschanged = pickVoice;
-  }
+  if (canSpeak) speechSynthesis.onvoiceschanged = pickVoice;
   function speak(text) {
-    if (!("speechSynthesis" in window)) return false;
+    if (!canSpeak) return false;
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "zh-CN";
-      if (zhVoice) u.voice = zhVoice;
+      u.lang = S.lang;
+      if (voice) u.voice = voice;
       u.rate = 0.8;
       speechSynthesis.speak(u);
       return true;
     } catch (e) { return false; }
   }
-  const canSpeak = "speechSynthesis" in window;
 
   // ---------- sounds ----------
   let audioCtx = null;
@@ -90,41 +132,61 @@
     } catch (e) { /* sound is optional */ }
   }
 
-  // ---------- 田字格 rendering ----------
+  // ---------- showing a word ----------
   function tzgRow(zh, opts) {
-    const chars = Array.from(zh);
-    const row = el("div", { class: "tzg-row" + (chars.length > 4 ? " most" : chars.length > 3 ? " many" : "") });
-    chars.forEach((c) => row.append(el("div", { class: "tzg" + (opts && opts.small ? " small" : ""), "aria-hidden": "true" }, c)));
+    const cs = chars(zh);
+    const row = el("div", { class: "tzg-row" + (cs.length > 4 ? " most" : cs.length > 3 ? " many" : "") });
+    cs.forEach((c) => row.append(el("div", { class: "tzg" + (opts && opts.small ? " small" : ""), "aria-hidden": "true" }, c)));
     return row;
   }
   function pyRow(zh, py) {
     const syl = py.split(/\s+/);
-    const chars = Array.from(zh);
-    const row = el("div", { class: "py-row" + (chars.length > 4 ? " most" : chars.length > 3 ? " many" : "") });
-    if (syl.length === chars.length) syl.forEach((s) => row.append(el("span", {}, s)));
+    const cs = chars(zh);
+    const row = el("div", { class: "py-row" + (cs.length > 4 ? " most" : cs.length > 3 ? " many" : "") });
+    if (syl.length === cs.length) syl.forEach((s) => row.append(el("span", {}, s)));
     else row.append(el("span", { style: "width:auto" }, py));
     return row;
   }
-  function sentenceNode(sent, word) {
-    const i = sent.indexOf(word);
-    const n = el("div", { class: "sentence", lang: "zh-CN" });
-    if (i < 0) { n.textContent = sent; return n; }
-    n.innerHTML = escapeHtml(sent.slice(0, i)) + "<mark>" + escapeHtml(word) + "</mark>" + escapeHtml(sent.slice(i + word.length));
+  // The word itself: 田字格 boxes for Chinese, big letters for everything else.
+  function termNode(term) {
+    if (S.boxes) return tzgRow(term);
+    return el("div", { class: "term-big" + (chars(term).length > 10 ? " long" : ""), lang: S.lang, dir: S.dir }, term);
+  }
+  function helperNode(w) {
+    return S.boxes ? pyRow(w.term, w.helper) : el("div", { class: "helper-front" }, w.helper);
+  }
+  // Where the word sits in its sentence, as [start, length]. Chinese has no spaces, so any match will do;
+  // other languages must match a whole word, ignoring capitals.
+  function findTerm(sent, term) {
+    if (S.boxes) { const i = sent.indexOf(term); return i < 0 ? null : [i, term.length]; }
+    const re = new RegExp("(^|[^\\p{L}])(" + term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?!\\p{L})", "iu");
+    const m = re.exec(sent);
+    return m ? [m.index + m[1].length, m[2].length] : null;
+  }
+  function sentenceNode(sent, term) {
+    const n = el("div", { class: "sentence", lang: S.lang, dir: S.dir });
+    const at = findTerm(sent, term);
+    if (!at) { n.textContent = sent; return n; }
+    const [i, len] = at;
+    n.innerHTML = escapeHtml(sent.slice(0, i)) + "<mark>" + escapeHtml(sent.slice(i, i + len)) + "</mark>" + escapeHtml(sent.slice(i + len));
     return n;
   }
 
   // ---------- year + chapter picker (shared) ----------
-  const loadSelected = () => new Set(store.get("chapters:" + year, year === 1 ? store.get("chapters", [1, 2, 3]) : [1]));
-  let selected = loadSelected();
+  // Older saves kept Year 1's chapters under "chapters".
+  const loadSelected = () => new Set(db.get("chapters:" + year, (year === 1 && db.get("chapters", null)) || [book().chapters[0].n]));
   const chipsBox = $("#chips");
   function renderYears() {
     const box = $("#years");
     box.innerHTML = "";
-    YEARS.forEach((y) => box.append(el("button", {
-      "aria-pressed": y === year ? "true" : "false",
-      onclick: () => { if (y !== year) { year = y; store.set("year", y); selected = loadSelected(); chaptersChanged(); } }
-    }, el("span", { class: "zh" }, BOOKS[y].zh), " Year " + y)));
-    $("#year-label").textContent = "Year " + year + " " + book().zh;
+    ALL_YEARS.forEach((y) => {
+      const b = books[y];
+      box.append(el("button", {
+        "aria-pressed": y === year ? "true" : "false", disabled: b ? false : "", title: b ? false : "Coming soon",
+        onclick: () => { if (y !== year) { year = y; db.set("year", y); selected = loadSelected(); chaptersChanged(); } }
+      }, el("span", { class: "big" }, (b && b.zh) || String(y)), b ? "Year " + y : "soon"));
+    });
+    $("#subtitle").textContent = "Learn with Mommy · Year " + year + (book().zh ? " " + book().zh : "");
   }
   function renderChips() {
     renderYears();
@@ -132,19 +194,23 @@
     book().chapters.forEach((c) => {
       chipsBox.append(el("button", {
         class: "chip", "aria-pressed": selected.has(c.n) ? "true" : "false",
-        title: c.zh + " · " + c.en,
+        title: chapName(c) + (chapSub(c) ? " · " + chapSub(c) : ""),
         onclick: () => { selected.has(c.n) ? selected.delete(c.n) : selected.add(c.n); chaptersChanged(); }
-      }, String(c.n)));
+      }, c.label || String(c.n)));
     });
     const picked = [...selected].sort((a, b) => a - b).map((n) => chapterOf(n)).filter(Boolean);
     const box = $("#picked");
-    if (!picked.length) box.textContent = "Pick at least one chapter to start.";
-    else if (picked.length === 1) box.innerHTML = "Chapter " + picked[0].n + " · <b>" + picked[0].zh + "</b> · " + picked[0].en + " (pg. " + picked[0].pages + ")";
-    else box.textContent = picked.length + " chapters · " + poolWords().length + " words";
+    if (!picked.length) box.textContent = "Pick at least one " + S.unit.toLowerCase() + " to start.";
+    else if (picked.length === 1) {
+      const c = picked[0];
+      box.innerHTML = (c.label ? "" : S.unit + " " + c.n + " · ") + "<b>" + escapeHtml(chapName(c)) + "</b>" +
+        (chapSub(c) ? " · " + escapeHtml(chapSub(c)) : "") + " (pg. " + escapeHtml(c.pages) + ")";
+    }
+    else box.textContent = picked.length + " " + units() + " · " + poolWords().length + " words";
   }
   function poolWords() { return WORDS.filter((w) => w.year === year && selected.has(w.ch)); }
   function chaptersChanged() {
-    store.set("chapters:" + year, [...selected]);
+    db.set("chapters:" + year, [...selected]);
     renderChips();
     Cards.reset();
     Quiz.renderSetup();
@@ -153,15 +219,18 @@
   $("#pick-none").onclick = () => { selected = new Set(); chaptersChanged(); };
 
   // ---------- known words ----------
-  // Older saves used "chapter:word" ids from the Year 1 only version.
-  const known = new Set(store.get("known", []).map((id) => (id.startsWith("y") ? id : "y1:" + id)));
-  const saveKnown = () => store.set("known", [...known]);
+  const saveKnown = () => db.set("known", [...known]);
 
   // ---------- FLASHCARDS ----------
   const Cards = (function () {
     const view = $("#view-cards");
     let deck = [], idx = 0, flipped = false;
-    let showPy = store.get("showPy", true), showPic = store.get("showPic", true), showEn = store.get("showEn", true), onlyLearning = false;
+    let showHelper = true, showPic = true, showMeaning = true, onlyLearning = false;
+
+    function load() {
+      showHelper = db.get("showPy", true); showPic = db.get("showPic", true); showMeaning = db.get("showEn", true);
+      onlyLearning = false;
+    }
 
     function reset(list) {
       let words = list || poolWords();
@@ -175,9 +244,9 @@
       const bar = el("div", { class: "deck-bar" },
         el("span", { class: "count" }, deck.length ? (idx + 1) + " / " + deck.length : "0 cards"),
         el("div", { class: "toggles" },
-          toggle("opt-py", "Pinyin on front", showPy, (v) => { showPy = v; store.set("showPy", v); render(); }),
-          toggle("opt-pic", "Picture on front", showPic, (v) => { showPic = v; store.set("showPic", v); render(); }),
-          toggle("opt-en", "English on front", showEn, (v) => { showEn = v; store.set("showEn", v); render(); }),
+          S.helper ? toggle("opt-py", S.helper + " on front", showHelper, (v) => { showHelper = v; db.set("showPy", v); render(); }) : null,
+          toggle("opt-pic", "Picture on front", showPic, (v) => { showPic = v; db.set("showPic", v); render(); }),
+          toggle("opt-en", S.meaning + " on front", showMeaning, (v) => { showMeaning = v; db.set("showEn", v); render(); }),
           toggle("opt-learning", "Hide words I know", onlyLearning, (v) => { onlyLearning = v; reset(); })
         )
       );
@@ -185,34 +254,35 @@
 
       if (!deck.length) {
         wrap.append(el("div", { class: "panel", style: "text-align:center" },
-          el("p", {}, selected.size ? "You know every word in these chapters. 太棒了！" : "Pick a chapter above to see its cards."),
+          el("p", {}, selected.size ? "You know every word in these " + units() + ". " + S.cheer.allKnown : "Pick a " + S.unit.toLowerCase() + " above to see its cards."),
           selected.size ? el("button", { class: "btn primary", onclick: () => { onlyLearning = false; reset(); } }, "Show all cards again") : null));
         view.append(wrap);
         return;
       }
 
       const w = deck[idx];
+      const c = chapterOf(w.ch, w.year);
       const front = el("div", { class: "face front" },
-        el("span", { class: "chap-tag" }, "Ch " + w.ch),
+        el("span", { class: "chap-tag" }, chapTag(c)),
         known.has(w.id) ? el("span", { class: "known-tag" }, "✓ I know it") : null,
         showPic ? el("div", { class: "pic", "aria-hidden": "true" }, w.pic) : null,
-        showPy ? pyRow(w.zh, w.py) : null,
-        tzgRow(w.zh),
-        showEn ? el("div", { class: "en-front" }, w.en) : null,
+        showHelper && w.helper ? helperNode(w) : null,
+        termNode(w.term),
+        showMeaning ? el("div", { class: "en-front" }, w.meaning) : null,
         el("span", { class: "hint" }, "Tap to flip")
       );
       const back = el("div", { class: "face back" },
-        el("span", { class: "chap-tag" }, "Ch " + w.ch + " · " + chapterOf(w.ch, w.year).zh),
+        el("span", { class: "chap-tag" }, chapTag(c) + (c.label ? "" : " · " + chapName(c))),
         el("div", { class: "pic", "aria-hidden": "true" }, w.pic),
-        el("div", { class: "zh-mid", lang: "zh-CN" }, w.zh),
-        el("div", { class: "py-big" }, w.py),
-        el("div", { class: "en-big" }, w.en),
-        w.sent ? sentenceNode(w.sent, w.zh) : null,
+        el("div", { class: "term-mid", lang: S.lang, dir: S.dir }, w.term),
+        w.helper ? el("div", { class: "py-big" }, w.helper) : null,
+        el("div", { class: "en-big" }, w.meaning),
+        w.sent ? sentenceNode(w.sent, w.term) : null,
         el("span", { class: "hint" }, "Tap to flip back")
       );
       const card = el("div", {
         class: "card" + (flipped ? " flipped" : ""), role: "button", tabindex: "0",
-        "aria-label": flipped ? (w.zh + ", " + w.py + ", " + w.en) : ("Card " + w.zh + ". Tap to flip."),
+        "aria-label": flipped ? [w.term, w.helper, w.meaning].filter(Boolean).join(", ") : ("Card " + w.term + ". Tap to flip."),
         onclick: flip,
         onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } }
       }, front, back);
@@ -221,7 +291,7 @@
 
       wrap.append(el("div", { class: "controls" },
         el("button", { class: "btn", onclick: prev, disabled: idx === 0 ? "" : false, "aria-label": "Previous card" }, "← Back"),
-        el("button", { class: "btn primary speak", onclick: () => speakWord(w), disabled: canSpeak ? false : "" }, "🔊 Say it"),
+        el("button", { class: "btn primary speak", onclick: () => speak(w.term), disabled: canSpeak ? false : "" }, "🔊 Say it"),
         el("button", { class: "btn", onclick: next, "aria-label": "Next card" }, idx === deck.length - 1 ? "Start over ↺" : "Next →")
       ));
       wrap.append(el("div", { class: "row2" },
@@ -232,8 +302,8 @@
         el("button", { class: "btn", onclick: () => { deck = shuffle(deck); idx = 0; flipped = false; render(); } }, "🔀 Shuffle"),
         w.sent ? el("button", { class: "btn", onclick: () => speak(w.sent), disabled: canSpeak ? false : "" }, "🔊 Say the sentence") : null
       ));
-      if (!canSpeak) wrap.append(el("p", { class: "note" }, "This browser can't read Chinese aloud. Try Chrome or Safari on a phone or tablet."));
-      else if (!zhVoice) wrap.append(el("p", { class: "note" }, "Tip: if you hear no Chinese voice, add a Chinese (Mandarin) voice in your device's language or text-to-speech settings."));
+      if (!canSpeak) wrap.append(el("p", { class: "note" }, "This browser can't read words aloud. Try Chrome or Safari on a phone or tablet."));
+      else if (!voice) wrap.append(el("p", { class: "note" }, "Tip: if you hear no " + S.voice + " voice, add " + (/^[aeiou]/i.test(S.voice) ? "an " : "a ") + S.voice + " voice in your device's language or text-to-speech settings."));
       wrap.append(el("p", { class: "note" }, "Keyboard: Space flips · ← → move · S says the word"));
       view.append(wrap);
     }
@@ -244,12 +314,11 @@
       input.onchange = () => cb(input.checked);
       return el("label", { for: id }, input, text);
     }
-    function speakWord(w) { speak(w.zh); }
     function flip() {
       flipped = !flipped;
       const card = $(".card", view);
       if (card) card.classList.toggle("flipped", flipped);
-      if (flipped && deck[idx]) speakWord(deck[idx]);
+      if (flipped && deck[idx]) speak(deck[idx].term);
     }
     function next() { if (!deck.length) return; idx = (idx + 1) % deck.length; flipped = false; render(); }
     function prev() { if (idx > 0) { idx--; flipped = false; render(); } }
@@ -272,72 +341,87 @@
       });
     }
     document.addEventListener("keydown", (e) => {
-      if (view.hidden || e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey) return;
+      if ($("#subject").hidden || view.hidden || e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey) return;
       if (e.key === "ArrowRight") next();
       else if (e.key === "ArrowLeft") prev();
-      else if (e.key === " " && !e.target.closest("button, .card")) { e.preventDefault(); flip(); }
-      else if ((e.key === "s" || e.key === "S") && deck[idx]) speakWord(deck[idx]);
+      else if (e.key === " " && !e.target.closest("button, a, .card")) { e.preventDefault(); flip(); }
+      else if ((e.key === "s" || e.key === "S") && deck[idx]) speak(deck[idx].term);
     });
 
-    return { reset, render };
+    return { load, reset, render };
   })();
 
   // ---------- QUIZ ----------
   const Quiz = (function () {
     const view = $("#view-quiz");
-    const TYPES = [
-      { id: "meaning", zh: "看字选意思", en: "See the word, pick the meaning" },
-      { id: "pinyin", zh: "看字选拼音", en: "See the word, pick the pinyin" },
-      { id: "picture", zh: "看图选字", en: "See the picture, pick the word" },
-      { id: "listen", zh: "听音选字", en: "Listen, then pick the word", needsSpeech: true },
-      { id: "blank", zh: "选词填空", en: "Fill in the missing word" },
-      { id: "poem", zh: "古诗接龙", en: "Pick the next line of the poem" }
-    ];
-    let types = new Set(store.get("quizTypes", ["meaning", "pinyin", "picture", "blank"]));
-    let length = store.get("quizLen", 10);
+    let types = new Set(), length = 10;
     let qs = [], qi = 0, score = 0, answered = false, mistakes = [];
+
+    const hasPoems = () => Object.values(books).some((b) => b.poems && b.poems.length);
+    function TYPES() {
+      const L = S.local;
+      return [
+        { id: "meaning", zh: L.meaning, en: "See the word, pick the meaning" },
+        S.helper && { id: "helper", zh: L.helper, en: "See the word, pick the " + S.helper.toLowerCase() },
+        { id: "picture", zh: L.picture, en: "See the picture, pick the word" },
+        { id: "listen", zh: L.listen, en: "Listen, then pick the word", needsSpeech: true },
+        S.letters && { id: "letter", en: "Fill in the missing letter" },
+        { id: "blank", zh: L.blank, en: "Fill in the missing word" },
+        hasPoems() && { id: "poem", zh: L.poem, en: "Pick the next line of the poem" }
+      ].filter(Boolean);
+    }
+
+    function load() {
+      const ids = TYPES().map((t) => t.id);
+      const fallback = ["meaning", "helper", "picture", "letter", "blank"].filter((t) => ids.includes(t));
+      // "pinyin" is what the helper question was called before there were other subjects.
+      types = new Set(db.get("quizTypes", fallback).map((t) => (t === "pinyin" ? "helper" : t)).filter((t) => ids.includes(t)));
+      length = db.get("quizLen", 10);
+      qs = [];
+    }
 
     function renderSetup() {
       if (view.hidden && qs.length && qi < qs.length) return; // keep a quiz in progress while on the cards tab
       qs = [];
       view.innerHTML = "";
       const pool = poolWords();
-      const panel = el("div", { class: "panel" }, el("h2", {}, "测验 Quiz time"));
+      const panel = el("div", { class: "panel" }, el("h2", {}, (S.local.quizTitle ? S.local.quizTitle + " " : "") + "Quiz time"));
 
       const typeBox = el("div", { class: "types" });
-      TYPES.forEach((t) => {
+      TYPES().forEach((t) => {
         const id = "qt-" + t.id;
         const input = el("input", { type: "checkbox", id });
         input.checked = types.has(t.id);
         input.disabled = t.needsSpeech && !canSpeak;
-        input.onchange = () => { input.checked ? types.add(t.id) : types.delete(t.id); store.set("quizTypes", [...types]); updateStart(); };
+        input.onchange = () => { input.checked ? types.add(t.id) : types.delete(t.id); db.set("quizTypes", [...types]); updateStart(); };
+        const en = t.en + (t.needsSpeech && !canSpeak ? " (needs sound support)" : "");
         typeBox.append(el("label", { class: "type", for: id }, input,
-          el("span", {}, el("b", { lang: "zh-CN" }, t.zh), el("small", {}, t.en + (t.needsSpeech && !canSpeak ? " (needs sound support)" : "")))));
+          el("span", {}, t.zh ? [el("b", { class: "local", lang: S.lang }, t.zh), el("small", {}, en)] : el("b", {}, en))));
       });
       panel.append(el("div", { style: "display:flex;flex-direction:column;gap:8px" }, el("span", { class: "label" }, "Question types"), typeBox));
 
       const seg = el("div", { class: "seg" });
       [5, 10, 20].forEach((n) => seg.append(el("button", {
         "aria-pressed": length === n ? "true" : "false",
-        onclick: () => { length = n; store.set("quizLen", n); renderSetup(); }
+        onclick: () => { length = n; db.set("quizLen", n); renderSetup(); }
       }, n + " questions")));
       panel.append(el("div", { style: "display:flex;flex-direction:column;gap:8px" }, el("span", { class: "label" }, "How many"), seg));
 
       const startBtn = el("button", { class: "btn primary", id: "quiz-start", onclick: start }, "Start quiz ▶");
       const msg = el("p", { class: "note", id: "quiz-msg" });
       panel.append(startBtn, msg);
-      const best = store.get("best", {});
+      const best = db.get("best", {});
       const key = bestKey();
-      if (best[key] != null) panel.append(el("p", { class: "best" }, "Best score for these chapters: " + best[key] + "%"));
+      if (best[key] != null) panel.append(el("p", { class: "best" }, "Best score for these " + units() + ": " + best[key] + "%"));
       view.append(panel);
       updateStart();
 
       function updateStart() {
         let problem = "";
-        if (!selected.size) problem = "Pick at least one chapter above.";
+        if (!selected.size) problem = "Pick at least one " + S.unit.toLowerCase() + " above.";
         else if (!types.size) problem = "Pick at least one question type.";
-        else if (pool.length < 4) problem = "Pick more chapters: a quiz needs at least 4 words.";
-        else if (types.size === 1 && types.has("poem") && !poemsInPool().length) problem = book().poems.length
+        else if (pool.length < 4) problem = "Pick more " + units() + ": a quiz needs at least 4 words.";
+        else if (types.size === 1 && types.has("poem") && !poemsInPool().length) problem = (book().poems || []).length
           ? "No poems in these chapters. Year " + year + " poems are in chapter " + book().poems.map((p) => p.ch).join(", ") + "."
           : "There are no poems in Year " + year + ".";
         startBtn.disabled = !!problem;
@@ -346,22 +430,37 @@
     }
 
     const bestKey = () => "y" + year + ":" + [...selected].sort((a, b) => a - b).join(",");
-    const poemsInPool = () => book().poems.filter((p) => selected.has(p.ch));
-    const allPoemLines = () => YEARS.flatMap((y) => BOOKS[y].poems.flatMap((x) => x.lines.map((l) => l[0])));
+    const poemsInPool = () => (book().poems || []).filter((p) => selected.has(p.ch));
+    const allPoemLines = () => Object.values(books).flatMap((b) => (b.poems || []).flatMap((x) => x.lines.map((l) => l[0])));
 
     // Pick 3 distractor words that look different from the answer on the field being asked.
     function distractors(answer, field, pool, n) {
-      const sameLen = (w) => Array.from(w.zh).length === Array.from(answer.zh).length;
-      const ok = (w) => w.id !== answer.id && w[field] !== answer[field] && w.en !== answer.en && w.zh !== answer.zh;
+      const sameLen = (w) => chars(w.term).length === chars(answer.term).length;
+      const ok = (w) => w.id !== answer.id && w[field] !== answer[field] && w.meaning !== answer.meaning && w.term !== answer.term;
       let cands = shuffle(pool.filter(ok));
       if (cands.length < n) cands = cands.concat(shuffle(WORDS.filter((w) => w.year === answer.year && ok(w) && !cands.includes(w))));
       const preferred = cands.filter(sameLen), rest = cands.filter((w) => !sameLen(w));
       const out = [];
       for (const w of preferred.concat(rest)) {
         if (out.length >= n) break;
-        if (!out.some((o) => o[field] === w[field] || o.en === w.en)) out.push(w);
+        if (!out.some((o) => o[field] === w[field] || o.meaning === w.meaning)) out.push(w);
       }
       return out;
+    }
+
+    // Hide one vowel ("p?n": a, e, i or o?). Year 1 phonics practises the vowel sounds.
+    function letterQuestion(word) {
+      const spots = [];
+      chars(word.term).forEach((c, i) => { if (/[aeiou]/i.test(c)) spots.push(i); });
+      if (!spots.length) return null;
+      const gap = spots[Math.floor(Math.random() * spots.length)];
+      const right = chars(word.term)[gap].toLowerCase();
+      const others = shuffle([..."aeiou"].filter((v) => v !== right)).slice(0, 3);
+      return {
+        type: "letter", word, gap,
+        options: shuffle([right, ...others]).map((l) => ({ label: l, right: l === right, term: true })),
+        answerText: right, say: word.term
+      };
     }
 
     function makeQuestion(type, word, pool) {
@@ -371,22 +470,24 @@
         const p = poems[Math.floor(Math.random() * poems.length)];
         const i = Math.floor(Math.random() * (p.lines.length - 1));
         const right = p.lines[i + 1][0];
-        const others = shuffle([...new Set(allPoemLines())].filter((l) => l !== right && l !== p.lines[i][0] && Array.from(l).length === Array.from(right).length)).slice(0, 3);
+        const others = shuffle([...new Set(allPoemLines())].filter((l) => l !== right && l !== p.lines[i][0] && chars(l).length === chars(right).length)).slice(0, 3);
         if (others.length < 3) return null;
         return {
           type, word: null, poem: p, line: p.lines[i],
-          options: shuffle([right, ...others]).map((t) => ({ label: t, right: t === right, zh: true })),
+          options: shuffle([right, ...others]).map((t) => ({ label: t, right: t === right, term: true })),
           answerText: right, say: p.lines[i][0] + "，" + right
         };
       }
-      if (type === "blank" && !word.sent) return null;
-      const field = type === "meaning" ? "en" : type === "pinyin" ? "py" : "zh";
+      if (type === "letter") return letterQuestion(word);
+      if (type === "blank" && !(word.sent && findTerm(word.sent, word.term))) return null;
+      if (type === "helper" && !word.helper) return null;
+      const field = type === "meaning" ? "meaning" : type === "helper" ? "helper" : "term";
       const opts = shuffle([word, ...distractors(word, field, pool, 3)]);
       if (opts.length < 4) return null;
       return {
         type, word,
-        options: opts.map((w) => ({ label: w[field], right: w.id === word.id, zh: field === "zh", w })),
-        answerText: word[field], say: word.zh
+        options: opts.map((w) => ({ label: w[field], right: w.id === word.id, term: field === "term", w })),
+        answerText: word[field], say: word.term
       };
     }
 
@@ -412,6 +513,8 @@
       answered = false;
       view.innerHTML = "";
       const q = qs[qi];
+      const L = S.local;
+      const ask = (en, local) => el("div", { class: "q-ask" }, en + " ", local ? el("span", { class: "zh" }, local) : null);
       const panel = el("div", { class: "panel" });
       panel.append(el("div", { class: "q-meta" },
         el("span", {}, "Question " + (qi + 1) + " of " + qs.length),
@@ -422,35 +525,44 @@
       const prompt = el("div", { class: "q-prompt" });
       const w = q.word;
       if (q.type === "meaning") {
-        prompt.append(el("div", { class: "q-ask" }, "What does this mean? ", el("span", { class: "zh" }, "这是什么意思？")), tzgRow(w.zh));
-      } else if (q.type === "pinyin") {
-        prompt.append(el("div", { class: "q-ask" }, "How do you say it? ", el("span", { class: "zh" }, "选出正确的拼音")), tzgRow(w.zh));
+        prompt.append(ask("What does this mean?", L.askMeaning), termNode(w.term));
+      } else if (q.type === "helper") {
+        prompt.append(ask("How do you say it?", L.askHelper), termNode(w.term));
       } else if (q.type === "picture") {
-        prompt.append(el("div", { class: "q-ask" }, "Which word is this? ", el("span", { class: "zh" }, "这是什么？")),
-          el("div", { class: "q-pic", "aria-hidden": "true" }, w.pic), el("div", { class: "q-big-en" }, w.en));
+        prompt.append(ask("Which word is this?", L.askPicture),
+          el("div", { class: "q-pic", "aria-hidden": "true" }, w.pic), el("div", { class: "q-big-en" }, w.meaning));
       } else if (q.type === "listen") {
-        prompt.append(el("div", { class: "q-ask" }, "Listen and pick the word. ", el("span", { class: "zh" }, "听一听")),
-          el("button", { class: "listen-btn", "aria-label": "Play the word", onclick: () => speak(w.zh) }, "🔊"),
+        prompt.append(ask("Listen and pick the word.", L.askListen),
+          el("button", { class: "listen-btn", "aria-label": "Play the word", onclick: () => speak(w.term) }, "🔊"),
           el("div", { class: "note" }, "Tap the speaker to hear it again"));
-        setTimeout(() => speak(w.zh), 250);
+        setTimeout(() => speak(w.term), 250);
+      } else if (q.type === "letter") {
+        const cs = chars(w.term);
+        prompt.append(ask("Which letter is missing?"),
+          el("div", { class: "q-pic", "aria-hidden": "true" }, w.pic),
+          el("div", { class: "term-big", lang: S.lang, dir: S.dir },
+            cs.slice(0, q.gap).join(""), el("span", { class: "gap" }, "?"), cs.slice(q.gap + 1).join("")),
+          el("div", { class: "q-sentence-en" }, w.meaning),
+          el("button", { class: "linkish", "aria-label": "Say the word", onclick: () => speak(w.term) }, "🔊 Hear the word"));
       } else if (q.type === "blank") {
-        const i = w.sent.indexOf(w.zh);
-        const s = el("div", { class: "q-sentence", lang: "zh-CN" });
-        s.innerHTML = escapeHtml(w.sent.slice(0, i)) + '<span class="blank">' + "？".repeat(Array.from(w.zh).length) + "</span>" + escapeHtml(w.sent.slice(i + w.zh.length));
-        prompt.append(el("div", { class: "q-ask" }, "Fill in the missing word. ", el("span", { class: "zh" }, "选词填空")), s,
-          el("div", { class: "q-sentence-en" }, "Hint: the word means “" + w.en + "”"));
+        const [i, len] = findTerm(w.sent, w.term);
+        const s = el("div", { class: "q-sentence", lang: S.lang, dir: S.dir });
+        s.innerHTML = escapeHtml(w.sent.slice(0, i)) + '<span class="blank">' + (S.boxes ? "？".repeat(chars(w.term).length) : "?") + "</span>" + escapeHtml(w.sent.slice(i + len));
+        prompt.append(ask("Fill in the missing word.", L.askBlank), s,
+          el("div", { class: "q-sentence-en" }, "Hint: the word means “" + w.meaning + "”"));
       } else if (q.type === "poem") {
-        prompt.append(el("div", { class: "q-ask" }, "What comes next? ", el("span", { class: "zh" }, "下一句是什么？")),
-          el("div", { class: "q-big-en", lang: "zh-CN", style: "font-family:var(--font-zh);font-weight:500" }, "《" + q.poem.title + "》"),
+        prompt.append(ask("What comes next?", L.askPoem),
+          el("div", { class: "q-big-en", lang: S.lang, style: "font-family:var(--font-term);font-weight:500" }, "《" + q.poem.title + "》"),
           el("div", { class: "note" }, q.poem.dynasty + " · " + q.poem.author + " · Chapter " + q.poem.ch),
-          el("div", { class: "q-sentence", lang: "zh-CN" }, q.line[0] + "，"),
+          el("div", { class: "q-sentence", lang: S.lang }, q.line[0] + "，"),
           el("div", { class: "q-sentence-en" }, q.line[1]));
       }
       panel.append(prompt);
 
       const opts = el("div", { class: "options" });
       q.options.forEach((o) => {
-        const b = el("button", { class: "opt" + (o.zh ? " zh" + (Array.from(o.label).length > 3 ? " long" : "") : ""), lang: o.zh ? "zh-CN" : false }, o.label);
+        const long = o.term && chars(o.label).length > (S.boxes ? 3 : 9);
+        const b = el("button", { class: "opt" + (o.term ? " term" + (long ? " long" : "") : ""), lang: o.term ? S.lang : false, dir: o.term ? S.dir : false }, o.label);
         b.onclick = () => choose(o, b, opts, q);
         opts.append(b);
       });
@@ -474,14 +586,14 @@
         score++;
         btn.classList.add("pop");
         fb.className = "feedback ok";
-        fb.textContent = shuffle(["太棒了！Great job!", "对了！Correct!", "真聪明！So clever!", "好极了！Excellent!"])[0];
+        fb.textContent = shuffle(S.cheer.right)[0];
         chime(true);
       } else {
         btn.classList.add("wrong", "shake");
         fb.className = "feedback no";
         fb.innerHTML = q.word
-          ? "Not quite. It's <span class=\"zh\">" + escapeHtml(q.word.zh) + "</span> " + escapeHtml(q.word.py) + " = " + escapeHtml(q.word.en)
-          : "Not quite. The next line is <span class=\"zh\">" + escapeHtml(q.answerText) + "</span>";
+          ? "Not quite. It's <span class=\"term\">" + escapeHtml(q.word.term) + "</span> " + escapeHtml((q.word.helper ? q.word.helper + " " : "") + "= " + q.word.meaning)
+          : "Not quite. The next line is <span class=\"term\">" + escapeHtml(q.answerText) + "</span>";
         chime(false);
         mistakes.push(q);
       }
@@ -501,18 +613,18 @@
       view.innerHTML = "";
       const pct = Math.round(score / qs.length * 100);
       const starCount = pct >= 90 ? 3 : pct >= 60 ? 2 : pct > 0 ? 1 : 0;
-      const best = store.get("best", {});
+      const best = db.get("best", {});
       const key = bestKey();
       const newBest = best[key] == null || pct > best[key];
-      if (newBest) { best[key] = pct; store.set("best", best); }
+      if (newBest) { best[key] = pct; db.set("best", best); }
 
       const panel = el("div", { class: "panel result" });
       const stars = el("div", { class: "stars", "aria-label": starCount + " out of 3 stars" });
       for (let i = 0; i < 3; i++) stars.append(el("span", { class: i < starCount ? "" : "off" }, "⭐"));
       panel.append(stars,
         el("div", { class: "score" }, score + " / " + qs.length),
-        el("h2", {}, pct === 100 ? "满分！Full marks!" : pct >= 60 ? "做得好！Well done!" : "加油！Keep trying!"),
-        newBest && qs.length ? el("p", { class: "best" }, "New best score for these chapters!") : null);
+        el("h2", {}, pct === 100 ? S.cheer.full : pct >= 60 ? S.cheer.good : S.cheer.more),
+        newBest && qs.length ? el("p", { class: "best" }, "New best score for these " + units() + "!") : null);
 
       const wrongWords = mistakes.filter((q) => q.word).map((q) => q.word);
       if (mistakes.length) {
@@ -520,12 +632,12 @@
         mistakes.forEach((q) => {
           if (q.word) {
             list.append(el("div", { class: "review-item" },
-              el("span", { class: "zh", lang: "zh-CN" }, q.word.zh),
-              el("div", { class: "info" }, el("b", {}, q.word.py + " · " + q.word.en), el("small", {}, "Chapter " + q.word.ch)),
-              canSpeak ? el("button", { class: "linkish", "aria-label": "Say " + q.word.zh, onclick: () => speak(q.word.zh) }, "🔊") : null));
+              el("span", { class: "term", lang: S.lang, dir: S.dir }, q.word.term),
+              el("div", { class: "info" }, el("b", {}, (q.word.helper ? q.word.helper + " · " : "") + q.word.meaning), el("small", {}, chapTag(chapterOf(q.word.ch, q.word.year)))),
+              canSpeak ? el("button", { class: "linkish", "aria-label": "Say " + q.word.term, onclick: () => speak(q.word.term) }, "🔊") : null));
           } else {
             list.append(el("div", { class: "review-item" },
-              el("div", { class: "info", lang: "zh-CN", style: "font-family:var(--font-zh)" },
+              el("div", { class: "info", lang: S.lang, style: "font-family:var(--font-term)" },
                 el("b", {}, q.line[0] + "，" + q.answerText),
                 el("small", {}, "《" + q.poem.title + "》 " + q.poem.author))));
           }
@@ -541,20 +653,81 @@
       qs = [];
     }
 
-    return { renderSetup };
+    return { load, renderSetup };
   })();
 
-  // ---------- tabs ----------
+  // ---------- screens: home, and a subject's cards and quiz ----------
+  // Addresses: #english/cards, #chinese/quiz ... and no hash for the home screen.
+  function renderHome() {
+    const box = $("#subjects");
+    if (box.childElementCount) return;
+    SUBJECTS.forEach((s) => {
+      const ys = yearsOf(s.id);
+      const status = !ys.length ? "Coming soon"
+        : ys.length === 1 ? "Year " + ys[0]
+        : ys.every((y, i) => !i || y === ys[i - 1] + 1) ? "Years " + ys[0] + "–" + ys[ys.length - 1]
+        : "Years " + ys.join(", ");
+      const kids = [
+        el("span", { class: "s-icon", dir: s.dir || false, "aria-hidden": "true" }, s.icon),
+        el("b", {}, s.name),
+        s.sub ? el("small", {}, s.sub) : null,
+        el("span", { class: "s-status" }, status)
+      ];
+      box.append(ys.length
+        ? el("a", { class: "subject", href: "#" + s.id + "/cards", style: "--h:" + s.hue, onclick: () => { cameFromHome = true; } }, kids)
+        : el("div", { class: "subject soon", style: "--h:" + s.hue, "aria-disabled": "true" }, kids));
+    });
+  }
+
+  let cameFromHome = false;
+  function showHome() {
+    if (canSpeak) speechSynthesis.cancel();
+    $("#home").hidden = false;
+    $("#subject").hidden = true;
+    $("#tabs").hidden = true;
+    $("#back").hidden = true;
+    $("#title").textContent = "Learn with Mommy";
+    $("#subtitle").textContent = "Pick a subject · Pilih subjek";
+    $("#credit").innerHTML = "";
+    document.title = "Learn with Mommy";
+    renderHome();
+  }
+
+  function openSubject(id, tab) {
+    if (!S || S.id !== id) loadSubject(id);
+    $("#home").hidden = true;
+    $("#subject").hidden = false;
+    $("#tabs").hidden = false;
+    $("#back").hidden = false;
+    $("#title").textContent = S.title;
+    $("#credit").innerHTML = S.credit;
+    document.title = "Learn with Mommy · " + S.name;
+    renderYears();
+    showTab(tab);
+  }
+
   function showTab(name) {
-    const cards = name === "cards";
+    const cards = name !== "quiz";
     $("#view-cards").hidden = !cards;
     $("#view-quiz").hidden = cards;
     $("#tab-cards").setAttribute("aria-selected", cards ? "true" : "false");
     $("#tab-quiz").setAttribute("aria-selected", cards ? "false" : "true");
-    try { history.replaceState(null, "", "#" + name); } catch (e) { /* ignore */ }
+    try { history.replaceState(null, "", "#" + S.id + "/" + (cards ? "cards" : "quiz")); } catch (e) { /* ignore */ }
   }
   $("#tab-cards").onclick = () => showTab("cards");
   $("#tab-quiz").onclick = () => showTab("quiz");
+  $("#back").onclick = () => { if (cameFromHome) history.back(); else location.hash = ""; };
+
+  function route() {
+    const h = location.hash.slice(1);
+    // Links from before there were subjects (#cards, #quiz) open Chinese.
+    const [id, tab] = h === "cards" || h === "quiz" ? ["chinese", h] : h.split("/");
+    if (yearsOf(id).length && SUBJECTS.some((s) => s.id === id)) openSubject(id, tab);
+    else showHome();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+  route();
 
   // ---------- install as an app ----------
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
@@ -582,9 +755,4 @@
       help.hidden = false;
     };
   }
-
-  renderChips();
-  Cards.reset();
-  Quiz.renderSetup();
-  showTab(location.hash === "#quiz" ? "quiz" : "cards");
 })();

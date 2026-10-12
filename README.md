@@ -1,7 +1,14 @@
-# Learn with Mommy · 学华文
+# Learn with Mommy
 
-Flashcards and quizzes for **SRJKC Bahasa Cina Tahun 1–6 (一至六年级华文)**, built from the free pinyin + English editions at
-[multilingual-malaysian.github.io/SRJKC_resources](https://multilingual-malaysian.github.io/SRJKC_resources/).
+Flashcards and quizzes for Malaysian primary school subjects. Pick a subject on the home screen, then the year and chapters.
+
+| Subject | Years | Source |
+|---|---|---|
+| Chinese 华文 | 1–6 | the free pinyin + English editions at [multilingual-malaysian.github.io/SRJKC_resources](https://multilingual-malaysian.github.io/SRJKC_resources/) |
+| English | 1 | *Super Minds 1* (Cambridge University Press), the Year 1 textbook: starter + 9 units, 143 words, meanings in Bahasa Melayu |
+| Science, Jawi, Bahasa Arab, Aqidah, Adab, Ibadah, Sirah, Al-Quran, Agama Islam, Sejarah | – | coming soon |
+
+**Chinese** (SRJKC Bahasa Cina Tahun 1–6):
 
 | Year | Chapters | Words | Poems |
 |---|---|---|---|
@@ -12,14 +19,14 @@ Flashcards and quizzes for **SRJKC Bahasa Cina Tahun 1–6 (一至六年级华�
 | 5 五年级 | 20 | 283 | 10 |
 | 6 六年级 | 20 | 282 | 1 |
 
-- Pick the year, then the chapters.
-- **闪卡 Cards** – about 12–15 key words per chapter. Each card shows the word in 田字格 boxes (pinyin and picture optional).
-  Tap to flip for pinyin, English and a sentence from the textbook. 🔊 reads it aloud. Mark words "I know it" to hide them.
-- **测验 Quiz** – 5, 10 or 20 questions from the chapters you pick. Question types: meaning, pinyin, picture → word,
-  listen → word, fill in the blank (sentences from the book), and next line of the Tang poems (古诗).
+- **Cards** – the key words of each chapter. Chinese cards show the word in 田字格 boxes with pinyin; English cards show the word
+  in big letters with its Bahasa Melayu meaning. Tap to flip for the meaning and a sentence from the textbook. 🔊 reads it aloud.
+  Mark words "I know it" to hide them.
+- **Quiz** – 5, 10 or 20 questions from the chapters you pick: meaning, picture → word, listen → word, fill in the blank
+  (sentences from the book), plus pinyin and the next line of the Tang poems (古诗) for Chinese, and the missing letter for English.
   Mistakes can be practised again as flashcards.
 
-Progress (known words, best scores) is saved in the browser only.
+Progress (known words, best scores) is saved in the browser only, separately for each subject.
 
 ## Play it
 
@@ -27,7 +34,7 @@ Open `index.html` in a browser, or turn on GitHub Pages: **Settings → Pages �
 
 ## Install it as an app
 
-The GitHub Pages site can be installed like an app, with its own 学 icon, full screen and working offline:
+The GitHub Pages site can be installed like an app, with its own icon, full screen and working offline:
 
 - **iPhone / iPad:** open the site in Safari, tap Share ⬆︎ → **Add to Home Screen**.
 - **Android / Chrome / Edge:** tap **📲 Install as an app** at the bottom of the page, or the browser menu → **Install app**.
@@ -38,6 +45,18 @@ The icons in `icons/` are plain PNGs; replace them with the same sizes to change
 
 ## Edit the words
 
-Each year's words live in `js/data/yearN.js`: `[Chinese, pinyin, English, picture emoji, example sentence]`.
-Years 2–6 words were picked from each lesson's text; pinyin comes from a dictionary and the English is short and kid-friendly,
-so a few entries may need a small fix.
+- `js/subjects.js` – the subjects on the home screen and how each one looks and sounds.
+- `js/data/chinese/yearN.js` – `[Chinese, pinyin, English, picture emoji, example sentence]`.
+  Years 2–6 words were picked from each lesson's text; pinyin comes from a dictionary and the English is short and kid-friendly,
+  so a few entries may need a small fix.
+- `js/data/english/year1.js` – `[English, Bahasa Melayu, picture emoji, example sentence]`.
+
+## Add a new book
+
+1. Make `js/data/<subject>/yearN.js` (copy `js/data/english/year1.js` and change `addBook("english", 1, ...)` to the subject id
+   and year, for example `addBook("jawi", 1, ...)`). The subject ids are in `js/subjects.js`.
+2. Add a `<script src="js/data/<subject>/yearN.js"></script>` line to `index.html`, next to the others.
+3. Add the file to `SHELL` in `sw.js` so it works offline.
+
+The subject's tile on the home screen turns on by itself once it has a book. For a language written right to left
+(Jawi, Bahasa Arab), the subject already has `dir: "rtl"`; set `lang` to the language the words should be read aloud in.

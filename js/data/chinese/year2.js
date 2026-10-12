@@ -4,8 +4,7 @@
  *
  * Each word: [Chinese, pinyin, English, picture, example sentence from the book (optional)]
  */
-window.BOOKS = window.BOOKS || {};
-window.BOOKS[2] = {
+addBook("chinese", 2, {
   year: 2, zh: "二年级",
   chapters: [
     { n: 1, zh: "丰富多彩的校园生活", en: "Colourful School Life", pages: "1–5", words: [
@@ -409,4 +408,4 @@ window.BOOKS[2] = {
       ["早有蜻蜓立上头", "zǎo yǒu qīng tíng lì shàng tóu"]
     ]}
   ]
-};
+});

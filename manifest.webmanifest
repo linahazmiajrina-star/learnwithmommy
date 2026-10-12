@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Learn with Mommy · 学华文",
-  "short_name": "学华文",
-  "description": "Flashcards and quizzes for SRJKC Bahasa Cina Years 1–6 (一至六年级华文), with pinyin, English and sound.",
+  "name": "Learn with Mommy",
+  "short_name": "Learn with Mommy",
+  "description": "Flashcards and quizzes for Malaysian primary school subjects: Chinese (Years 1–6), English and more, with pictures and sound.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",

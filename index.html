@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Learn with Mommy · 华文</title>
-<meta name="description" content="Flashcards and quizzes for SRJKC Bahasa Cina Years 1–6 (一至六年级华文), with pinyin, English and sound.">
+<title>Learn with Mommy</title>
+<meta name="description" content="Flashcards and quizzes for Malaysian primary school subjects: Chinese (Years 1–6), English and more, with pictures and sound.">
 <meta name="theme-color" content="#f3f7f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#11191d" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="学华文">
+<meta name="apple-mobile-web-app-title" content="Learn with Mommy">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Noto+Sans+SC:wght@500;700&family=ZCOOL+KuaiLe&display=swap" crossorigin>
@@ -22,49 +22,54 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <h1>学华文</h1>
-      <span>Learn with Mommy · <span id="year-label">Year 1 一年级</span></span>
+      <button class="home-btn" id="back" aria-label="All subjects" hidden>←</button>
+      <h1 id="title">Learn with Mommy</h1>
+      <span id="subtitle"></span>
     </div>
-    <nav class="tabs" role="tablist">
-      <button id="tab-cards" role="tab" aria-selected="true"><span class="zh">闪卡</span>Cards</button>
-      <button id="tab-quiz" role="tab" aria-selected="false"><span class="zh">测验</span>Quiz</button>
+    <nav class="tabs" id="tabs" role="tablist" hidden>
+      <button id="tab-cards" role="tab" aria-selected="true"><span class="zh" id="tab-cards-local"></span>Cards</button>
+      <button id="tab-quiz" role="tab" aria-selected="false"><span class="zh" id="tab-quiz-local"></span>Quiz</button>
     </nav>
   </header>
 
-  <section class="picker" aria-label="Year and chapters">
-    <span class="label">Year 年级</span>
-    <div class="years" id="years"></div>
-    <div class="picker-head">
-      <span class="label">Chapters 单元</span>
-      <div>
-        <button class="linkish" id="pick-all">All</button>
-        <button class="linkish" id="pick-none">Clear</button>
-      </div>
-    </div>
-    <div class="chips" id="chips"></div>
-    <div class="picked" id="picked"></div>
+  <section class="home" id="home" aria-label="Subjects">
+    <div class="subjects" id="subjects"></div>
   </section>
 
-  <main id="view-cards"></main>
-  <main id="view-quiz" hidden></main>
+  <div id="subject" hidden>
+    <section class="picker" aria-label="Year and chapters">
+      <span class="label" id="years-label">Year</span>
+      <div class="years" id="years"></div>
+      <div class="picker-head">
+        <span class="label" id="units-label">Chapters</span>
+        <div>
+          <button class="linkish" id="pick-all">All</button>
+          <button class="linkish" id="pick-none">Clear</button>
+        </div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="picked" id="picked"></div>
+    </section>
+
+    <main id="view-cards"></main>
+    <main id="view-quiz" hidden></main>
+  </div>
 
   <div class="install" id="install" hidden>
     <button class="btn" id="install-btn">📲 Install as an app</button>
     <p class="note" id="install-help" hidden></p>
   </div>
 
-  <footer>
-    Words, pinyin and sentences from the free
-    <a href="https://multilingual-malaysian.github.io/SRJKC_resources/" target="_blank" rel="noopener">SRJKC Resources pinyin editions (Years 1–6)</a>.
-    For home learning only.
-  </footer>
+  <footer><span id="credit"></span> For home learning only.</footer>
 </div>
-<script src="js/data/year1.js"></script>
-<script src="js/data/year2.js"></script>
-<script src="js/data/year3.js"></script>
-<script src="js/data/year4.js"></script>
-<script src="js/data/year5.js"></script>
-<script src="js/data/year6.js"></script>
+<script src="js/subjects.js"></script>
+<script src="js/data/chinese/year1.js"></script>
+<script src="js/data/chinese/year2.js"></script>
+<script src="js/data/chinese/year3.js"></script>
+<script src="js/data/chinese/year4.js"></script>
+<script src="js/data/chinese/year5.js"></script>
+<script src="js/data/chinese/year6.js"></script>
+<script src="js/data/english/year1.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
